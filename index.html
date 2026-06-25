@@ -1182,18 +1182,18 @@ function renderOverview() {
   const tbody = $('overviewTable').querySelector('tbody');
 
   thead.innerHTML = `<tr>
-    <th>班级</th><th>姓名</th><th>学号</th><th>性别</th>
+    <th>课程时间</th><th>班级</th><th>姓名</th><th>学号</th><th>性别</th>
     <th>考勤</th><th>身体素质</th><th>25m蛙腿</th><th>50m蛙泳</th><th>技术评定</th><th>阳光长跑</th>
     <th>总分</th><th>状态</th>
   </tr>`;
 
   if (DB.students.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="padding:24px;color:var(--text2)">暂无数据</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="padding:24px;color:var(--text2)">暂无数据</td></tr>';
   } else {
     tbody.innerHTML = DB.students.map(s => {
       const t = calcTotal(s);
       return `<tr class="${t.disqualified?'disqualified':''}">
-        <td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
+        <td>${esc(s.group||'')}</td><td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
         <td>${t.att}</td><td>${t.fit.toFixed(1)}</td><td>${t.sw25}</td><td>${t.sw50}</td><td>${t.tech}</td><td>${t.sunny}</td>
         <td><b class="${t.total>=60?'score-good':'score-bad'}">${t.total.toFixed(1)}</b></td>
         <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':s.exempt?'<span class="tag tag-info">免修</span>':'<span class="tag tag-info">正常</span>'}</td>
