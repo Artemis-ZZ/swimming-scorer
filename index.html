@@ -702,6 +702,7 @@ function esc(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+function valOr0(v) { return (v !== undefined && v !== null) ? v : ''; }
 
 // ========== ATTENDANCE ==========
 function loadAttendance() {
@@ -1335,7 +1336,8 @@ function exportExcel() {
           if (diffMs < 0) continue;
           const weekNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
           if (weekNum >= 1 && weekNum <= 16) {
-            const sym = ATT_SYMBOL[a.type] || '○';
+            const sym = ATT_SYMBOL[a.type];
+            if (!sym) continue;  // 未知类型不导出标记
             const idx = 3 + weekNum; // col index (E=4, so week1→4)
             r[idx] = r[idx] ? r[idx] + sym : sym;
           }
@@ -1343,27 +1345,27 @@ function exportExcel() {
       }
       if (s.gender === '女') {
         r[21] = f.f_50m || '';            // V: 50m成绩
-        r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50M) || ''; // W: 50m分数
+        r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50m); r[22] = r[22] !== undefined ? r[22] : ''; // W: 50m分数
         r[23] = f.f_800m ? secToTime(timeToSec(f.f_800m)) : '';   // X: 800m成绩
-        r[24] = scoreTime(timeToSec(f.f_800m), FEMALE_800M) || ''; // Y: 800m分数
+        r[24] = scoreTime(timeToSec(f.f_800m), FEMALE_800M); r[24] = r[24] !== undefined ? r[24] : ''; // Y: 800m分数
         r[25] = f.f_lj || '';             // Z: 立定跳远成绩
-        r[26] = scoreCount(parseFloat(f.f_lj), FEMALE_LJ) || '';   // AA: 立定跳远分数
+        r[26] = scoreCount(parseFloat(f.f_lj), FEMALE_LJ); r[26] = r[26] !== undefined ? r[26] : ''; // AA: 立定跳远分数
         r[27] = f.f_situp || '';          // AB: 仰卧起坐
-        r[28] = scoreCount(parseFloat(f.f_situp), FEMALE_SITUPS) || ''; // AC: 仰卧起坐分数
+        r[28] = scoreCount(parseFloat(f.f_situp), FEMALE_SITUPS); r[28] = r[28] !== undefined ? r[28] : ''; // AC: 仰卧起坐分数
       } else {
         r[21] = f.f_50m || '';            // V: 50m成绩
-        r[22] = scoreTime(parseFloat(f.f_50m), MALE_50M) || ''; // W: 50m分数
+        r[22] = scoreTime(parseFloat(f.f_50m), MALE_50M); r[22] = r[22] !== undefined ? r[22] : ''; // W: 50m分数
         r[23] = f.f_1000m ? secToTime(timeToSec(f.f_1000m)) : ''; // X: 1000m成绩
-        r[24] = scoreTime(timeToSec(f.f_1000m), MALE_1000M) || ''; // Y: 1000m分数
+        r[24] = scoreTime(timeToSec(f.f_1000m), MALE_1000M); r[24] = r[24] !== undefined ? r[24] : ''; // Y: 1000m分数
         r[25] = f.f_lj || '';             // Z: 立定跳远成绩
-        r[26] = scoreCount(parseFloat(f.f_lj), MALE_LJ) || '';   // AA: 立定跳远分数
+        r[26] = scoreCount(parseFloat(f.f_lj), MALE_LJ); r[26] = r[26] !== undefined ? r[26] : ''; // AA: 立定跳远分数
         r[27] = f.f_pullup || '';         // AB: 引体向上
-        r[28] = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS) || ''; // AC: 引体向上分数
+        r[28] = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS); r[28] = r[28] !== undefined ? r[28] : ''; // AC: 引体向上分数
       }
       r[29] = t.fit.toFixed(1);           // AD: 素质总分
       r[30] = sw.sw_25m ? secToTime(timeToSec(sw.sw_25m)) : ''; // AE: 25m成绩
       const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
-      r[31] = scoreTime(timeToSec(sw.sw_25m), table25) || '';   // AF: 25m得分
+      r[31] = scoreTime(timeToSec(sw.sw_25m), table25); r[31] = r[31] !== undefined ? r[31] : ''; // AF: 25m得分
       r[32] = sw.sw_50m ? secToTime(timeToSec(sw.sw_50m)) : ''; // AG: 50m成绩
       const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
       const sw50raw = scoreTime(timeToSec(sw.sw_50m), table50);
