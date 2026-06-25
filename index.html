@@ -1283,8 +1283,8 @@ function renderOverview() {
       const t = calcTotal(s);
       return `<tr class="${t.disqualified?'disqualified':''}">
         <td>${esc(s.group||'')}</td><td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
-        <td>${t.att}</td><td>${t.fit.toFixed(1)}</td><td>${t.sw25}</td><td>${t.sw50}</td><td>${t.tech}</td><td>${t.sunny}</td>
-        <td><b class="${t.total>=60?'score-good':'score-bad'}">${t.total.toFixed(1)}</b></td>
+        <td>${s.exempt?0:t.att}</td><td>${s.exempt?'0.0':t.fit.toFixed(1)}</td><td>${s.exempt?0:t.sw25}</td><td>${s.exempt?0:t.sw50}</td><td>${s.exempt?0:t.tech}</td><td>${s.exempt?0:t.sunny}</td>
+        <td><b class="${t.total>=60?'score-good':'score-bad'}">${s.exempt?'0.0':t.total.toFixed(1)}</b></td>
         <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':s.exempt?'<span class="tag tag-info">免修</span>':'<span class="tag tag-info">正常</span>'}</td>
       </tr>`;
     }).join('');
