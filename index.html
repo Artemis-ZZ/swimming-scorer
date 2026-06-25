@@ -1057,8 +1057,11 @@ function loadGroupSwim() {
       <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="如 1'30"
         onchange="saveGroupSwimField('${s.id}','sw_50m')" style="width:70px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s50}</td>
-      <td><input type="text" id="gswtech_${s.id}" value="${esc(vTech)}" placeholder="0-10"
-        onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:50px;padding:4px 6px;font-size:13px"></td>
+      <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:55px;padding:4px;font-size:13px">
+        <option value="" ${!vTech?'selected':''}>-</option>
+        ${[0,2,4,6,8,10].map(v => `<option value="${v}" ${vTech==v?'selected':''}>${v}</option>`).join('')}
+      </select>
+      <div style="font-size:9px;color:var(--text2);line-height:1.2;margin-top:2px">标准:翻脚/分手抬头<br>1:1:1配合/漂浮/手未过肩</div></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
