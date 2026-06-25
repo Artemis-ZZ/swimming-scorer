@@ -361,9 +361,18 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 <div class="page" id="page-query">
   <div class="card">
     <h2>🔍 查询单个学生</h2>
-    <select id="detailStudent" onchange="showStudentDetail()">
-      <option value="">-- 请选择 --</option>
-    </select>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="queryGroup" onchange="filterQueryStudents()">
+          <option value="">-- 全部 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>学生</label>
+        <select id="detailStudent" onchange="showStudentDetail()">
+          <option value="">-- 请选择 --</option>
+        </select>
+      </div>
+    </div>
     <div id="studentDetailContent" style="margin-top:12px"></div>
   </div>
 </div>
@@ -537,6 +546,7 @@ document.getElementById('nav').addEventListener('click', function(e) {
     populateGroupSelect('sunnyGroup');
   }
   if (page === 'query') {
+    populateGroupSelect('queryGroup');
     populateStudentSelect('detailStudent');
   }
   if (page === 'overview') {
@@ -1345,6 +1355,15 @@ function refreshStats() {
 }
 
 // ========== STUDENT DETAIL QUERY ==========
+function filterQueryStudents() {
+  const group = $('queryGroup').value;
+  const sel = $('detailStudent');
+  const list = group ? DB.students.filter(s => (s.group || '').trim() === group) : DB.students;
+  sel.innerHTML = '<option value="">-- 请选择 --</option>' +
+    list.map(s => `<option value="${s.id}">${esc(s.class)} - ${esc(s.name)} (${esc(s.sid)})</option>`).join('');
+  $('studentDetailContent').innerHTML = '';
+}
+
 function showStudentDetail() {
   const sid = $('detailStudent').value;
   const container = $('studentDetailContent');
