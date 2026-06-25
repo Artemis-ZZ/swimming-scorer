@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="游泳课成绩">
+<link rel="manifest" href="manifest.json">
+<title>游泳课成绩管理系统</title>
+<style>
+:root {
+  --primary: #007AFF;
+  --danger: #FF3B30;
+  --success: #34C759;
+  --warning: #FF9500;
+  --bg: #F2F2F7;
+  --card: #FFFFFF;
+  --text: #1C1C1E;
+  --text2: #8E8E93;
+  --sep: #E5E5EA;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  max-width: 900px; margin: 0 auto; padding-bottom: 80px;
+}
+header {
+  background: var(--primary); color: #fff;
+  padding: 12px 16px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+}
+header h1 { font-size: 18px; font-weight: 600; }
+header .count { font-size: 13px; opacity: .85; }
+nav {
+  display: flex; background: var(--card); border-bottom: 1px solid var(--sep);
+  position: sticky; top: 44px; z-index: 99; overflow-x: auto;
+}
+nav button {
+  flex: 1; min-width: fit-content; padding: 12px 10px; border: none;
+  background: none; font-size: 14px; color: var(--text2); white-space: nowrap;
+  border-bottom: 2px solid transparent; cursor: pointer; transition: .15s;
+}
+nav button.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.page { display: none; padding: 12px; }
+.page.active { display: block; }
+.card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+}
+.card h2 { font-size: 16px; margin-bottom: 12px; }
+.card h3 { font-size: 14px; margin-bottom: 8px; color: var(--text2); }
+label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+input, select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--sep);
+  border-radius: 8px; font-size: 15px; font-family: inherit;
+  background: var(--bg); -webkit-appearance: none;
+}
+input:focus, select:focus { outline: none; border-color: var(--primary); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 20px; border-radius: 8px; font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer; transition: .15s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-outline { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-block { width: 100%; margin-top: 8px; }
+.btn:active { opacity: .7; }
+.form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.form-row > * { flex: 1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--sep); }
+th { font-weight: 600; color: var(--text2); font-size: 12px; white-space: nowrap; }
+tr.disqualified { background: #FFF3F3; color: var(--danger); }
+.score-good { color: var(--success); font-weight: 600; }
+.score-bad { color: var(--danger); font-weight: 600; }
+.tag {
+  display: inline-block; padding: 2px 6px; border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.tag-warn { background: #FFF3CD; color: #856404; }
+.tag-danger { background: #FFE5E5; color: #C00; }
+.tag-info { background: #E5F0FF; color: #004C99; }
+.gap { gap: 8px; }
+.mt { margin-top: 8px; }
+.mb { margin-bottom: 8px; }
+.hidden { display: none !important; }
+.upload-area {
+  border: 2px dashed var(--sep); border-radius: var(--radius);
+  padding: 32px; text-align: center; cursor: pointer; transition: .15s;
+}
+.upload-area:hover { border-color: var(--primary); background: #F0F6FF; }
+.upload-area .icon { font-size: 36px; margin-bottom: 8px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.stat-card {
+  background: var(--card); border-radius: var(--radius); padding: 12px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.stat-card .num { font-size: 28px; font-weight: 700; color: var(--primary); }
+.stat-card .label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.att-log { font-size: 13px; }
+.att-log .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--sep); }
+.att-log .row .remove-btn { color: var(--danger); cursor: pointer; font-size: 16px; }
+input[type="file"] { display: none; }
+@media (max-width: 480px) {
+  .card { padding: 12px; }
+  th, td { padding: 6px 4px; font-size: 11px; }
+  .form-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏊 游泳课成绩管理</h1>
+  <span class="count" id="studentCount">0 名学生</span>
+</header>
+
+<nav id="nav">
+  <button data-page="students" class="active">📋 学生</button>
+  <button data-page="attendance">📅 考勤</button>
+  <button data-page="fitness">💪 身体素质</button>
+  <button data-page="swim">🏊 游泳</button>
+  <button data-page="overview">📊 总览</button>
+</nav>
+
+<!-- ==================== 学生管理页 ==================== -->
+<div class="page active" id="page-students">
+  <div class="card">
+    <h2>📥 导入学生</h2>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      支持 .xlsx / .xls 文件，表头需包含：<b>班级、姓名、学号、性别</b>
+    </p>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📂</div>
+      <div>点击上传 Excel 文件</div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
+    <div id="importPreview" class="mt hidden"></div>
+  </div>
+
+  <div class="card">
+    <h2>✍️ 手动添加</h2>
+    <div class="form-row">
+      <div><label>班级</label><input id="mClass" placeholder="如: 计算机2201"></div>
+      <div><label>姓名</label><input id="mName" placeholder="姓名"></div>
+    </div>
+    <div class="form-row">
+      <div><label>学号</label><input id="mSid" placeholder="学号"></div>
+      <div><label>性别</label><select id="mGender"><option value="男">男</option><option value="女">女</option></select></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="addStudent()">➕ 添加</button>
+    <p id="addMsg" style="font-size:12px;color:var(--danger);margin-top:4px"></p>
+  </div>
+
+  <div class="card" id="studentListCard">
+    <h2>👥 学生列表 <span style="font-size:12px;color:var(--text2)" id="listInfo"></span></h2>
+    <div style="overflow-x:auto">
+      <table id="studentTable">
+        <thead><tr><th>班级</th><th>姓名</th><th>学号</th><th>性别</th><th>操作</th></tr></thead>
+        <tbody id="studentTbody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-outline btn-sm mt" onclick="clearAll()">🗑 清空全部</button>
+  </div>
+</div>
+
+<!-- ==================== 考勤页 ==================== -->
+<div class="page" id="page-attendance">
+  <div class="card" id="attStudentSelector">
+    <h2>选择学生</h2>
+    <select id="attStudent" onchange="loadAttendance()">
+      <option value="">-- 请选择 --</option>
+    </select>
+  </div>
+  <div id="attContent" class="hidden">
+    <div class="card">
+      <h2 id="attTitle"></h2>
+      <div class="stats-grid" id="attStats"></div>
+    </div>
+    <div class="card">
+      <h2>➕ 添加考勤记录</h2>
+      <div class="form-row">
+        <div><label>类型</label><select id="attType"><option value="旷课">旷课</option><option value="病假">病假</option><option value="事假">事假</option><option value="公假">公假</option><option value="见习">见习(女)</option></select></div>
+        <div><label>日期</label><input type="date" id="attDate"></div>
+      </div>
+      <div><label>备注</label><input id="attNote" placeholder="可选"></div>
+      <button class="btn btn-primary btn-block mt" onclick="addAttendance()">➕ 添加记录</button>
+    </div>
+    <div class="card">
+      <h2>📋 考勤记录</h2>
+      <div class="att-log" id="attLog"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 身体素质页 ==================== -->
+<div class="page" id="page-fitness">
+  <div class="card">
+    <h2>选择学生</h2>
+    <select id="fitStudent" onchange="loadFitness()">
+      <option value="">-- 请选择 --</option>
+    </select>
+  </div>
+  <div id="fitContent" class="hidden">
+    <div class="card">
+      <h2 id="fitTitle"></h2>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">输入原始成绩，系统自动对照评分表算出分数</p>
+      <div id="fitInputs"></div>
+      <button class="btn btn-primary btn-block" onclick="saveFitness()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 游泳页 ==================== -->
+<div class="page" id="page-swim">
+  <div class="card">
+    <h2>选择学生</h2>
+    <select id="swimStudent" onchange="loadSwim()">
+      <option value="">-- 请选择 --</option>
+    </select>
+  </div>
+  <div id="swimContent" class="hidden">
+    <div class="card">
+      <h2 id="swimTitle"></h2>
+      <div id="swimInputs"></div>
+      <button class="btn btn-primary btn-block" onclick="saveSwim()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 总览页 ==================== -->
+<div class="page" id="page-overview">
+  <div class="card">
+    <h2>📊 成绩总览</h2>
+    <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 导出 Excel</button>
+    <div style="overflow-x:auto;margin-top:8px">
+      <table id="overviewTable"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+  <div class="card" id="statsCard">
+    <h2>📈 统计分析</h2>
+    <div><label>按维度筛选</label><select id="statGroup" onchange="refreshStats()"><option value="all">全部</option><option value="class">按班级</option></select></div>
+    <div class="stats-grid mt" id="statsGrid"></div>
+  </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+// ========== DATA STORE ==========
+const STORE_KEY = 'swim_scorer_data';
+let DB = { students: [] };
+function saveDB() { localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }
+function loadDB() {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (raw) { try { DB = JSON.parse(raw); } catch(e) { DB = { students: [] }; } }
+  if (!DB.students) DB.students = [];
+}
+loadDB();
+
+// ========== HELPERS ==========
+function $(id) { return document.getElementById(id); }
+function timeToSec(t) {
+  if (typeof t === 'number') return t;
+  if (!t || t === '') return null;
+  t = String(t).trim();
+  const m = t.match(/^(\d+)[\'′](\d+)[\"″]?$/);
+  if (m) return parseInt(m[1]) * 60 + parseInt(m[2]);
+  const s = parseFloat(t);
+  return isNaN(s) ? null : s;
+}
+function secToTime(s) {
+  if (s === null || s === undefined) return '';
+  const m = Math.floor(s / 60);
+  const sec = Math.round(s % 60);
+  return m > 0 ? `${m}'${String(sec).padStart(2,'0')}"` : `${sec}"`;
+}
+
+// ========== SCORING TABLES ==========
+// Format: [threshold, score] — threshold is the WORST acceptable value for that score
+// For time events: "time <= threshold" gets that score (iterate from best score down)
+// For count/distance: "value >= threshold" gets that score
+
+const FEMALE_800M = [
+  [timeToSec("3'18\""), 10], [timeToSec("3'24\""), 9.5], [timeToSec("3'30\""), 9],
+  [timeToSec("3'37\""), 8.5], [timeToSec("3'44\""), 8], [timeToSec("3'49\""), 7.8],
+  [timeToSec("3'54\""), 7.6], [timeToSec("3'59\""), 7.4], [timeToSec("4'04\""), 7.2],
+  [timeToSec("4'09\""), 7], [timeToSec("4'14\""), 6.8], [timeToSec("4'19\""), 6.6],
+  [timeToSec("4'24\""), 6.4], [timeToSec("4'29\""), 6.2], [timeToSec("4'34\""), 6],
+  [timeToSec("4'44\""), 5], [timeToSec("4'54\""), 4], [timeToSec("5'04\""), 3],
+  [timeToSec("5'14\""), 2], [timeToSec("5'24\""), 1]
+];
+const MALE_1000M = [
+  [timeToSec("3'17\""), 10], [timeToSec("3'22\""), 9.5], [timeToSec("3'27\""), 9],
+  [timeToSec("3'34\""), 8.5], [timeToSec("3'42\""), 8], [timeToSec("3'47\""), 7.8],
+  [timeToSec("3'52\""), 7.6], [timeToSec("3'57\""), 7.4], [timeToSec("4'02\""), 7.2],
+  [timeToSec("4'07\""), 7], [timeToSec("4'12\""), 6.8], [timeToSec("4'17\""), 6.6],
+  [timeToSec("4'22\""), 6.4], [timeToSec("4'27\""), 6.2], [timeToSec("4'32\""), 6],
+  [timeToSec("4'52\""), 5], [timeToSec("5'12\""), 4], [timeToSec("5'32\""), 3],
+  [timeToSec("5'52\""), 2], [timeToSec("6'12\""), 1]
+];
+
+const FEMALE_SITUPS = [
+  [56, 10], [54, 9.5], [52, 9], [49, 8.5], [46, 8], [44, 7.8], [42, 7.6], [40, 7.4],
+  [38, 7.2], [36, 7], [34, 6.8], [32, 6.6], [30, 6.4], [28, 6.2], [26, 6],
+  [24, 5], [22, 4], [20, 3], [18, 2], [16, 1]
+];
+const MALE_PULLUPS = [
+  [17, 10], [16, 9.5], [15, 9], [14, 8.5], [13, 8], [12, 7.6], [11, 7.2],
+  [10, 6.8], [9, 6.4], [8, 6], [7, 5], [6, 4], [5, 3], [4, 2], [3, 1]
+];
+
+const FEMALE_50M = [
+  [7.5, 5], [7.6, 4.75], [7.7, 4.5], [8.0, 4.25], [8.3, 4], [8.5, 3.9], [8.7, 3.8],
+  [8.9, 3.7], [9.1, 3.6], [9.3, 3.5], [9.5, 3.4], [9.7, 3.3], [9.9, 3.2],
+  [10.1, 3.1], [10.3, 3], [10.5, 2.5], [10.7, 2], [10.9, 1.5], [11.1, 1], [11.3, 0.5]
+];
+const MALE_50M = [
+  [6.7, 5], [6.8, 4.75], [6.9, 4.5], [7.0, 4.25], [7.1, 4], [7.3, 3.9], [7.5, 3.8],
+  [7.7, 3.7], [7.9, 3.6], [8.1, 3.5], [8.3, 3.4], [8.5, 3.3], [8.7, 3.2],
+  [8.9, 3.1], [9.1, 3], [9.3, 2.5], [9.5, 2], [9.7, 1.5], [9.9, 1], [10.1, 0.5]
+];
+
+const FEMALE_LJ = [
+  [207, 5], [201, 4.75], [195, 4.5], [188, 4.25], [181, 4], [178, 3.9], [175, 3.8],
+  [172, 3.7], [169, 3.6], [166, 3.5], [163, 3.4], [160, 3.3], [157, 3.2],
+  [154, 3.1], [151, 3], [146, 2.5], [141, 2], [136, 1.5], [131, 1], [126, 0.5]
+];
+const MALE_LJ = [
+  [273, 5], [268, 4.75], [263, 4.5], [256, 4.25], [248, 4], [244, 3.9], [240, 3.8],
+  [236, 3.7], [232, 3.6], [228, 3.5], [224, 3.4], [220, 3.3], [216, 3.2],
+  [212, 3.1], [208, 3], [203, 2.5], [198, 2], [193, 1.5], [188, 1], [183, 0.5]
+];
+
+// 25m蛙泳腿 (1-10, same for both genders)
+const SWIM_25M = [
+  [28, 10], [33, 9], [37, 8], [50, 7], [60, 6], [70, 5], [80, 4], [90, 3], [100, 2], [120, 1]
+];
+const SWIM_25M_F = [
+  [30, 10], [38, 9], [45, 8], [60, 7], [70, 6], [80, 5], [90, 4], [100, 3], [110, 2], [130, 1]
+];
+
+// 50m蛙泳 performance (18-30)
+const SWIM_50M = [
+  [60, 30], [63, 29], [66, 28], [70, 27], [75, 26], [80, 25], [83, 24], [87, 23],
+  [93, 22], [97, 21], [101, 20], [105, 19], [999, 18]
+];
+const SWIM_50M_F = [
+  [65, 30], [68, 29], [71, 28], [75, 27], [80, 26], [85, 25], [88, 24], [92, 23],
+  [98, 22], [102, 21], [106, 20], [110, 19], [999, 18]
+];
+
+// Lookup: for time-based (lower=better), find first row where value <= threshold
+function scoreTime(value, table) {
+  if (value === null || value === undefined || value === '') return 0;
+  for (const [threshold, score] of table) {
+    if (value <= threshold) return score;
+  }
+  return 0;
+}
+// For count/distance (higher=better), find first row where value >= threshold
+function scoreCount(value, table) {
+  if (value === null || value === undefined || value === '') return 0;
+  for (const [threshold, score] of table) {
+    if (value >= threshold) return score;
+  }
+  return 0;
+}
+
+// ========== NAVIGATION ==========
+document.getElementById('nav').addEventListener('click', function(e) {
+  if (e.target.tagName !== 'BUTTON') return;
+  const page = e.target.dataset.page;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+  if (page === 'students') renderStudents();
+  if (page === 'attendance') populateStudentSelect('attStudent');
+  if (page === 'fitness') populateStudentSelect('fitStudent');
+  if (page === 'swim') populateStudentSelect('swimStudent');
+  if (page === 'overview') renderOverview();
+});
+
+// ========== STUDENT MANAGEMENT ==========
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const wb = XLSX.read(ev.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      if (rows.length < 2) { alert('Excel 文件为空'); return; }
+      const header = rows[0].map(h => String(h || '').trim());
+      const colClass = header.findIndex(h => h.includes('班级'));
+      const colName = header.findIndex(h => h.includes('姓名'));
+      const colSid = header.findIndex(h => h.includes('学号'));
+      const colGender = header.findIndex(h => h.includes('性别'));
+      if (colClass < 0 || colName < 0 || colSid < 0) {
+        alert('表头需要包含"班级、姓名、学号"列，当前表头: ' + header.join(', '));
+        return;
+      }
+      let imported = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || !r[colName]) continue;
+        const sid = String(r[colSid] || '').trim();
+        if (DB.students.find(s => s.sid === sid)) continue;
+        let gender = '男';
+        if (colGender >= 0) {
+          const g = String(r[colGender] || '').trim();
+          if (g.includes('女')) gender = '女';
+        }
+        DB.students.push({
+          id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
+          class: String(r[colClass] || '').trim(),
+          name: String(r[colName] || '').trim(),
+          sid,
+          gender,
+          attendance: [],
+          fitness: {},
+          swim: {},
+          sunny: null
+        });
+        imported++;
+      }
+      saveDB();
+      $('importPreview').innerHTML = `<div class="card" style="background:#E8F8EE"><b>✅ 成功导入 ${imported} 名学生</b></div>`;
+      $('importPreview').classList.remove('hidden');
+      renderStudents();
+      updateCount();
+    } catch(err) {
+      alert('解析失败: ' + err.message);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function addStudent() {
+  const cls = $('mClass').value.trim();
+  const name = $('mName').value.trim();
+  const sid = $('mSid').value.trim();
+  const gender = $('mGender').value;
+  if (!cls || !name || !sid) { $('addMsg').textContent = '请填写所有字段'; return; }
+  if (DB.students.find(s => s.sid === sid)) { $('addMsg').textContent = '学号重复'; return; }
+  DB.students.push({
+    id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    class: cls, name, sid, gender, attendance: [], fitness: {}, swim: {}, sunny: null
+  });
+  saveDB();
+  $('mClass').value = $('mName').value = $('mSid').value = '';
+  $('addMsg').textContent = '';
+  renderStudents();
+  updateCount();
+}
+
+function removeStudent(id) {
+  if (!confirm('确定删除该学生？所有成绩数据将一并删除。')) return;
+  DB.students = DB.students.filter(s => s.id !== id);
+  saveDB();
+  renderStudents();
+  updateCount();
+}
+
+function clearAll() {
+  if (!confirm('确定清空全部学生和成绩数据？此操作不可恢复！')) return;
+  DB.students = [];
+  saveDB();
+  renderStudents();
+  updateCount();
+}
+
+function renderStudents() {
+  const tbody = $('studentTbody');
+  if (DB.students.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text2);padding:24px">暂无学生，请导入或手动添加</td></tr>';
+  } else {
+    tbody.innerHTML = DB.students.map((s,i) => `
+      <tr>
+        <td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
+        <td>${s.gender}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">删除</button></td>
+      </tr>`).join('');
+  }
+  $('listInfo').textContent = `共 ${DB.students.length} 人`;
+}
+
+function updateCount() {
+  $('studentCount').textContent = `${DB.students.length} 名学生`;
+}
+
+function populateStudentSelect(elId) {
+  const sel = $(elId);
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 请选择 --</option>' +
+    DB.students.map(s => `<option value="${s.id}">${esc(s.class)} - ${esc(s.name)} (${esc(s.sid)})</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function getStudent(id) { return DB.students.find(s => s.id === id); }
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ========== ATTENDANCE ==========
+function loadAttendance() {
+  const sid = $('attStudent').value;
+  const s = getStudent(sid);
+  if (!s) { $('attContent').classList.add('hidden'); return; }
+  $('attContent').classList.remove('hidden');
+  $('attTitle').textContent = `${esc(s.name)} (${esc(s.sid)}) - 考勤`;
+  renderAttStats(s);
+  renderAttLog(s);
+  $('attDate').value = new Date().toISOString().split('T')[0];
+}
+
+function addAttendance() {
+  const sid = $('attStudent').value;
+  const s = getStudent(sid);
+  if (!s) return;
+  const type = $('attType').value;
+  const date = $('attDate').value;
+  const note = $('attNote').value.trim();
+  if (!date) { alert('请选择日期'); return; }
+  s.attendance = s.attendance || [];
+  s.attendance.push({ type, date, note });
+  saveDB();
+  $('attNote').value = '';
+  renderAttStats(s);
+  renderAttLog(s);
+}
+
+function removeAttendance(sid, idx) {
+  const s = getStudent(sid);
+  if (!s) return;
+  s.attendance.splice(idx, 1);
+  saveDB();
+  renderAttStats(s);
+  renderAttLog(s);
+}
+
+function calcAttendance(s) {
+  const att = s.attendance || [];
+  let score = 10;
+  let kuang = 0, bing = 0, shi = 0, gong = 0, jianxi = 0;
+  for (const a of att) {
+    if (a.type === '旷课') { kuang++; score -= 5; }
+    else if (a.type === '病假') { bing++; if (bing===2) score-=1; else if (bing===3) score-=3; else if (bing>=4) score-=5; }
+    else if (a.type === '事假') { shi++; score -= 2; }
+    else if (a.type === '公假') { gong++; }
+    else if (a.type === '见习') { jianxi++; }
+  }
+  const nonOfficial = kuang + bing + shi;
+  const disqualified = nonOfficial >= 5;
+  return { score: Math.max(0, score), kuang, bing, shi, gong, jianxi, nonOfficial, disqualified };
+}
+
+function renderAttStats(s) {
+  const a = calcAttendance(s);
+  $('attStats').innerHTML = `
+    <div class="stat-card"><div class="num" style="color:${a.disqualified?'var(--danger)':'var(--primary)'}">${a.score}</div><div class="label">考勤得分/10</div></div>
+    <div class="stat-card"><div class="num">${a.kuang}</div><div class="label">旷课</div></div>
+    <div class="stat-card"><div class="num">${a.bing}</div><div class="label">病假</div></div>
+    <div class="stat-card"><div class="num">${a.shi}</div><div class="label">事假</div></div>
+    <div class="stat-card"><div class="num">${a.gong}</div><div class="label">公假</div></div>
+    <div class="stat-card"><div class="num">${a.jianxi}</div><div class="label">见习</div></div>
+    ${a.disqualified?'<div class="stat-card"><div class="num" style="color:var(--danger)">⚠️</div><div class="label" style="color:var(--danger)">取消考试资格</div></div>':''}
+  `;
+}
+
+function renderAttLog(s) {
+  const att = s.attendance || [];
+  if (att.length === 0) {
+    $('attLog').innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">暂无记录</div>';
+    return;
+  }
+  $('attLog').innerHTML = att.map((a,i) => `
+    <div class="row">
+      <span><span class="tag ${a.type==='旷课'?'tag-danger':a.type==='见习'?'tag-info':'tag-warn'}">${a.type}</span> ${a.date} ${a.note?esc(a.note):''}</span>
+      <span class="remove-btn" onclick="removeAttendance('${s.id}',${i})">✕</span>
+    </div>`).join('');
+}
+
+// ========== FITNESS ==========
+function loadFitness() {
+  const sid = $('fitStudent').value;
+  const s = getStudent(sid);
+  if (!s) { $('fitContent').classList.add('hidden'); return; }
+  $('fitContent').classList.remove('hidden');
+  $('fitTitle').textContent = `${esc(s.name)} (${esc(s.sid)}) - 身体素质`;
+  s.fitness = s.fitness || {};
+  const f = s.fitness;
+  let html = '';
+  if (s.gender === '女') {
+    html += fieldRow('800m跑', 'f_800m', f.f_800m, '秒，如 3\'30" 或 210');
+    html += fieldRow('仰卧起坐', 'f_situp', f.f_situp, '个');
+    html += fieldRow('50m跑', 'f_50m', f.f_50m, '秒，如 7.5');
+    html += fieldRow('立定跳远', 'f_lj', f.f_lj, 'cm');
+  } else {
+    html += fieldRow('1000m跑', 'f_1000m', f.f_1000m, '秒，如 3\'27" 或 207');
+    html += fieldRow('引体向上', 'f_pullup', f.f_pullup, '个');
+    html += fieldRow('50m跑', 'f_50m', f.f_50m, '秒，如 6.7');
+    html += fieldRow('立定跳远', 'f_lj', f.f_lj, 'cm');
+  }
+  $('fitInputs').innerHTML = html;
+}
+
+function fieldRow(label, key, val, placeholder) {
+  return `<div class="form-row" style="margin-bottom:8px">
+    <div style="flex:0 0 100px"><label>${label}</label></div>
+    <div><input id="${key}" value="${val||''}" placeholder="${placeholder||''}"></div>
+    <div style="flex:0 0 80px"><span style="font-size:13px;color:var(--text2)" id="${key}_score"></span></div>
+  </div>`;
+}
+
+function saveFitness() {
+  const sid = $('fitStudent').value;
+  const s = getStudent(sid);
+  if (!s) return;
+  s.fitness = s.fitness || {};
+  if (s.gender === '女') {
+    s.fitness.f_800m = $('f_800m').value.trim();
+    s.fitness.f_situp = $('f_situp').value.trim();
+    s.fitness.f_50m = $('f_50m').value.trim();
+    s.fitness.f_lj = $('f_lj').value.trim();
+  } else {
+    s.fitness.f_1000m = $('f_1000m').value.trim();
+    s.fitness.f_pullup = $('f_pullup').value.trim();
+    s.fitness.f_50m = $('f_50m').value.trim();
+    s.fitness.f_lj = $('f_lj').value.trim();
+  }
+  saveDB();
+  // Calc scores
+  const scores = calcFitness(s);
+  $('fitInputs').querySelectorAll('[id$="_score"]').forEach(el => {
+    const key = el.id.replace('_score','');
+    el.textContent = scores[key] !== undefined ? scores[key].toFixed(1) + '分' : '';
+  });
+  alert('✅ 已保存');
+}
+
+function calcFitness(s) {
+  const f = s.fitness || {};
+  const result = {};
+  if (s.gender === '女') {
+    result.f_800m = scoreTime(timeToSec(f.f_800m), FEMALE_800M);
+    result.f_situp = scoreCount(parseFloat(f.f_situp), FEMALE_SITUPS);
+    result.f_50m = scoreTime(parseFloat(f.f_50m), FEMALE_50M);
+    result.f_lj = scoreCount(parseFloat(f.f_lj), FEMALE_LJ);
+  } else {
+    result.f_1000m = scoreTime(timeToSec(f.f_1000m), MALE_1000M);
+    result.f_pullup = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS);
+    result.f_50m = scoreTime(parseFloat(f.f_50m), MALE_50M);
+    result.f_lj = scoreCount(parseFloat(f.f_lj), MALE_LJ);
+  }
+  result.total = Object.values(result).reduce((a,b) => a + b, 0);
+  return result;
+}
+
+// ========== SWIM ==========
+function loadSwim() {
+  const sid = $('swimStudent').value;
+  const s = getStudent(sid);
+  if (!s) { $('swimContent').classList.add('hidden'); return; }
+  $('swimContent').classList.remove('hidden');
+  $('swimTitle').textContent = `${esc(s.name)} (${esc(s.sid)}) - 游泳专项`;
+  s.swim = s.swim || {};
+  const sw = s.swim;
+  const html = `
+    <div class="form-row"><div style="flex:0 0 120px"><label>25m蛙泳腿</label></div>
+      <div><input id="sw_25m" value="${sw.sw_25m||''}" placeholder="秒，如 28"></div>
+      <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_25m_score"></span></div></div>
+    <div class="form-row"><div style="flex:0 0 120px"><label>50m蛙泳</label></div>
+      <div><input id="sw_50m" value="${sw.sw_50m||''}" placeholder="${s.gender==='女'?'秒，如 65':'秒，如 60'}"></div>
+      <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_50m_score"></span></div></div>
+    <div class="form-row"><div style="flex:0 0 120px"><label>技术评定</label></div>
+      <div><input id="sw_tech" value="${sw.sw_tech||''}" placeholder="0-10分，手动打分"></div></div>
+    <div class="form-row"><div style="flex:0 0 120px"><label>阳光长跑</label></div>
+      <div><input id="sw_sunny" value="${s.sunny||''}" placeholder="0-10分，手动输入"></div></div>
+  `;
+  $('swimInputs').innerHTML = html;
+}
+
+function saveSwim() {
+  const sid = $('swimStudent').value;
+  const s = getStudent(sid);
+  if (!s) return;
+  s.swim = s.swim || {};
+  s.swim.sw_25m = $('sw_25m').value.trim();
+  s.swim.sw_50m = $('sw_50m').value.trim();
+  s.swim.sw_tech = parseFloat($('sw_tech').value) || 0;
+  s.sunny = parseFloat($('sw_sunny').value) || 0;
+  saveDB();
+  const scores = calcSwim(s);
+  $('sw_25m_score').textContent = scores.sw25 + '分';
+  $('sw_50m_score').textContent = scores.sw50perf + '分';
+  alert('✅ 已保存');
+}
+
+function calcSwim(s) {
+  const sw = s.swim || {};
+  const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
+  const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
+  const sw25Raw = scoreTime(parseFloat(sw.sw_25m), table25);
+  const sw50Raw = scoreTime(parseFloat(sw.sw_50m), table50);
+  // Map 50m raw 18-30 → 30 points
+  const sw50perf = sw50Raw > 0 ? Math.round((sw50Raw / 30) * 30) : 0;
+  const swTech = Math.min(10, Math.max(0, parseFloat(sw.sw_tech) || 0));
+  const sw25 = sw25Raw; // 1:1 mapping, max 10
+  return { sw25, sw50perf, swTech, sunny: Math.min(10, Math.max(0, s.sunny || 0)) };
+}
+
+function calcTotal(s) {
+  const att = calcAttendance(s);
+  const fit = calcFitness(s);
+  const swim = calcSwim(s);
+  return {
+    att: att.score,
+    fit: fit.total,
+    sw25: swim.sw25,
+    sw50: swim.sw50perf + swim.swTech,
+    sunny: swim.sunny,
+    total: att.score + fit.total + swim.sw25 + swim.sw50perf + swim.swTech + swim.sunny,
+    disqualified: att.disqualified
+  };
+}
+
+// ========== OVERVIEW ==========
+function renderOverview() {
+  const thead = $('overviewTable').querySelector('thead');
+  const tbody = $('overviewTable').querySelector('tbody');
+
+  thead.innerHTML = `<tr>
+    <th>班级</th><th>姓名</th><th>学号</th><th>性别</th>
+    <th>考勤</th><th>身体素质</th><th>25m蛙腿</th><th>50m蛙泳</th><th>阳光长跑</th>
+    <th>总分</th><th>状态</th>
+  </tr>`;
+
+  if (DB.students.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:24px;color:var(--text2)">暂无数据</td></tr>';
+  } else {
+    tbody.innerHTML = DB.students.map(s => {
+      const t = calcTotal(s);
+      return `<tr class="${t.disqualified?'disqualified':''}">
+        <td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
+        <td>${t.att}</td><td>${t.fit.toFixed(1)}</td><td>${t.sw25}</td><td>${t.sw50}</td><td>${t.sunny}</td>
+        <td><b class="${t.total>=60?'score-good':'score-bad'}">${t.total.toFixed(1)}</b></td>
+        <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':'<span class="tag tag-info">正常</span>'}</td>
+      </tr>`;
+    }).join('');
+  }
+  refreshStats();
+}
+
+function refreshStats() {
+  const group = $('statGroup').value;
+  let students = DB.students;
+  if (students.length === 0) { $('statsGrid').innerHTML = '<div style="padding:12px;color:var(--text2)">暂无数据</div>'; return; }
+
+  let groups = {};
+  if (group === 'class') {
+    for (const s of students) {
+      const c = s.class || '未分组';
+      if (!groups[c]) groups[c] = [];
+      groups[c].push(s);
+    }
+  } else {
+    groups['全部'] = students;
+  }
+
+  let html = '';
+  for (const [name, list] of Object.entries(groups)) {
+    const totals = list.map(s => calcTotal(s).total);
+    const avg = totals.reduce((a,b)=>a+b,0) / totals.length;
+    const max = Math.max(...totals);
+    const min = Math.min(...totals);
+    const pass = totals.filter(t=>t>=60).length;
+    const dq = list.filter(s => calcAttendance(s).disqualified).length;
+    html += `<div class="card" style="margin-bottom:8px">
+      <h3 style="margin-bottom:8px">${esc(name)} (${list.length}人)</h3>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num">${avg.toFixed(1)}</div><div class="label">平均分</div></div>
+        <div class="stat-card"><div class="num">${max.toFixed(0)}</div><div class="label">最高分</div></div>
+        <div class="stat-card"><div class="num">${min.toFixed(0)}</div><div class="label">最低分</div></div>
+        <div class="stat-card"><div class="num">${pass}</div><div class="label">及格(≥60)</div></div>
+        <div class="stat-card"><div class="num">${(pass/list.length*100).toFixed(0)}%</div><div class="label">及格率</div></div>
+        ${dq>0?`<div class="stat-card"><div class="num" style="color:var(--danger)">${dq}</div><div class="label" style="color:var(--danger)">取消资格</div></div>`:''}
+      </div>
+    </div>`;
+  }
+  $('statsGrid').innerHTML = html;
+}
+
+// ========== EXPORT ==========
+function exportExcel() {
+  const rows = [['班级','姓名','学号','性别','考勤得分','身体素质','25m蛙泳腿','50m蛙泳','阳光长跑','总分','状态']];
+  for (const s of DB.students) {
+    const t = calcTotal(s);
+    rows.push([s.class, s.name, s.sid, s.gender, t.att, t.fit.toFixed(1), t.sw25, t.sw50, t.sunny, t.total.toFixed(1), t.disqualified?'取消考试资格':'正常']);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '成绩总览');
+  XLSX.writeFile(wb, '游泳课成绩.xlsx');
+}
+
+// ========== INIT ==========
+updateCount();
+renderStudents();
+</script>
+</body>
+</html>
