@@ -862,6 +862,28 @@ function loadGroupAttendance() {
     html += `</td></tr>`;
   }
   html += '</tbody></table></div>';
+  // 见习周次汇总
+  const jianxiList = [];
+  const semStart = DB.startDate ? new Date(DB.startDate + 'T00:00:00') : null;
+  for (const s of students) {
+    const jx = (s.attendance || []).filter(a => a.type === '见习' && a.date);
+    if (jx.length > 0) {
+      const weeks = jx.map(a => {
+        if (!semStart) return a.date;
+        const diff = Math.floor((new Date(a.date + 'T00:00:00') - semStart) / (7*24*60*60*1000)) + 1;
+        return diff >= 1 && diff <= 16 ? '第' + diff + '周' : a.date;
+      }).join('、');
+      jianxiList.push({ name: s.name, sid: s.sid, weeks });
+    }
+  }
+  if (jianxiList.length > 0) {
+    html += `<div class="card" style="margin-top:12px"><h3>📋 见习记录</h3>
+      <table><thead><tr><th>姓名</th><th>学号</th><th>见习周次</th></tr></thead><tbody>`;
+    for (const j of jianxiList) {
+      html += `<tr><td>${esc(j.name)}</td><td>${esc(j.sid)}</td><td>${esc(j.weeks)}</td></tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
   container.innerHTML = html;
 }
 
