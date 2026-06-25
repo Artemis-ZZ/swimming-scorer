@@ -1374,12 +1374,12 @@ function showStudentDetail() {
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>💪 身体素质</b> — 总分：${fit.total.toFixed(1)}/30</td></tr>`;
   
   if (s.gender === '女') {
-    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '秒');
+    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '');
     html += fitnessDetailRow('800m跑', formatSwimTime(f.f_800m), fit.f_800m, '');
     html += fitnessDetailRow('立定跳远', f.f_lj, fit.f_lj, 'cm');
     html += fitnessDetailRow('仰卧起坐', f.f_situp, fit.f_situp, '个');
   } else {
-    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '秒');
+    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '');
     html += fitnessDetailRow('1000m跑', formatSwimTime(f.f_1000m), fit.f_1000m, '');
     html += fitnessDetailRow('立定跳远', f.f_lj, fit.f_lj, 'cm');
     html += fitnessDetailRow('引体向上', f.f_pullup, fit.f_pullup, '个');
