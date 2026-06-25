@@ -987,7 +987,7 @@ function calcSwim(s) {
   const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
   const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
   const sw25Raw = scoreTime(parseFloat(sw.sw_25m), table25);
-  const sw50Raw = scoreTime(parseFloat(sw.sw_50m), table50);
+  const sw50Raw = scoreTime(timeToSec(sw.sw_50m), table50);
   // Map 50m raw 18-30 → 30 points
   const sw50perf = sw50Raw > 0 ? Math.round((sw50Raw / 30) * 30) : 0;
   const swTech = Math.min(10, Math.max(0, parseFloat(sw.sw_tech) || 0));
@@ -1028,7 +1028,7 @@ function loadGroupSwim() {
         score = scoreTime(parseFloat(curVal), tbl) + '分/10';
       } else if (item === 'sw_50m') {
         const tbl = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
-        const r = scoreTime(parseFloat(curVal), tbl);
+        const r = scoreTime(timeToSec(curVal), tbl);
         score = r > 0 ? r + '分/30' : '';
       } else if (item === 'sw_tech') {
         score = curVal + '分/10';
@@ -1272,7 +1272,7 @@ function exportExcel() {
       r[31] = scoreTime(parseFloat(sw.sw_25m), table25) || '';   // AF: 25m得分
       r[32] = sw.sw_50m ? secToTime(parseFloat(sw.sw_50m)) : ''; // AG: 50m成绩
       const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
-      const sw50raw = scoreTime(parseFloat(sw.sw_50m), table50);
+      const sw50raw = scoreTime(timeToSec(sw.sw_50m), table50);
       r[33] = sw50raw > 0 ? sw50raw : '';  // AH: 50m得分(30分制，原始分18-30直接对应)
       r[34] = sw.sw_tech || '';           // AI: 技术评定
       const af = parseFloat(r[31]) || 0;
