@@ -255,7 +255,35 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 <!-- ==================== 身体素质页 ==================== -->
 <div class="page" id="page-fitness">
   <div class="card">
-    <h2>选择学生</h2>
+    <h2>💪 按课程时间录入身体素质</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="fitGroup" onchange="loadGroupFitness()">
+          <option value="">-- 请选择 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>测试项目</label>
+        <select id="fitItem" onchange="loadGroupFitness()">
+          <option value="">-- 请选择 --</option>
+          <option value="f_50m">50m跑（秒）</option>
+          <option value="f_800m">800m跑 女（分'秒"）</option>
+          <option value="f_1000m">1000m跑 男（分'秒"）</option>
+          <option value="f_situp">仰卧起坐 女（个）</option>
+          <option value="f_pullup">引体向上 男（个）</option>
+          <option value="f_lj">立定跳远（cm）</option>
+        </select>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+      输入原始成绩后自动算分，按回车或焦点移出自动保存
+    </p>
+    <div id="groupFitContent">
+      <div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和测试项目</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔍 查看单个学生身体素质</h2>
     <select id="fitStudent" onchange="loadFitness()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -273,7 +301,33 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 <!-- ==================== 游泳页 ==================== -->
 <div class="page" id="page-swim">
   <div class="card">
-    <h2>选择学生</h2>
+    <h2>🏊 按课程时间录入游泳成绩</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="swimGroup" onchange="loadGroupSwim()">
+          <option value="">-- 请选择 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>测试项目</label>
+        <select id="swimItem" onchange="loadGroupSwim()">
+          <option value="">-- 请选择 --</option>
+          <option value="sw_25m">25m蛙泳腿（秒）</option>
+          <option value="sw_50m">50m蛙泳（分'秒"）</option>
+          <option value="sw_tech">技术评定（0-10分）</option>
+          <option value="sw_sunny">阳光长跑（0-10分）</option>
+        </select>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+      输入成绩后自动算分，按回车或焦点移出自动保存
+    </p>
+    <div id="groupSwimContent">
+      <div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和测试项目</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔍 查看单个学生游泳成绩</h2>
     <select id="swimStudent" onchange="loadSwim()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -437,11 +491,17 @@ document.getElementById('nav').addEventListener('click', function(e) {
   if (page === 'students') renderStudents();
   if (page === 'attendance') {
     populateStudentSelect('attStudent');
-    populateGroupSelect();
+    populateGroupSelect('attGroup');
     $('attGroupDate').value = new Date().toISOString().split('T')[0];
   }
-  if (page === 'fitness') populateStudentSelect('fitStudent');
-  if (page === 'swim') populateStudentSelect('swimStudent');
+  if (page === 'fitness') {
+    populateStudentSelect('fitStudent');
+    populateGroupSelect('fitGroup');
+  }
+  if (page === 'swim') {
+    populateStudentSelect('swimStudent');
+    populateGroupSelect('swimGroup');
+  }
   if (page === 'overview') renderOverview();
 });
 
@@ -591,8 +651,8 @@ function populateStudentSelect(elId) {
   if (cur) sel.value = cur;
 }
 
-function populateGroupSelect() {
-  const sel = $('attGroup');
+function populateGroupSelect(elId) {
+  const sel = $(elId);
   const cur = sel.value;
   const groups = [...new Set(DB.students.map(s => (s.group || '').trim()).filter(g => g))];
   sel.innerHTML = '<option value="">-- 请选择 --</option>' +
@@ -814,6 +874,74 @@ function calcFitness(s) {
   return result;
 }
 
+// ========== GROUP FITNESS ==========
+function loadGroupFitness() {
+  const group = $('fitGroup').value;
+  const item = $('fitItem').value;
+  const container = $('groupFitContent');
+  if (!group || !item) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和测试项目</div>';
+    return;
+  }
+  const students = DB.students.filter(s => (s.group || '').trim() === group);
+  if (students.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">该课程时间暂无学生</div>';
+    return;
+  }
+  // Determine which gender this item is for
+  const femaleItems = ['f_50m','f_800m','f_situp','f_lj'];
+  const maleItems = ['f_50m','f_1000m','f_pullup','f_lj'];
+  const isFemaleOnly = item === 'f_800m' || item === 'f_situp';
+  const isMaleOnly = item === 'f_1000m' || item === 'f_pullup';
+
+  let html = `<div style="overflow-x:auto"><table>
+    <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>成绩</th><th>得分</th></tr></thead><tbody>`;
+  for (const s of students) {
+    s.fitness = s.fitness || {};
+    const curVal = s.fitness[item] || '';
+    if ((isFemaleOnly && s.gender !== '女') || (isMaleOnly && s.gender !== '男')) {
+      html += `<tr style="color:var(--text2)"><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td><td colspan="2">— 无需测试</td></tr>`;
+      continue;
+    }
+    let placeholder = '';
+    if (item === 'f_50m') placeholder = '秒，如 7.5';
+    else if (item === 'f_800m' || item === 'f_1000m') placeholder = "分'秒\" 如 3'30";
+    else if (item === 'f_lj') placeholder = 'cm';
+    else if (item === 'f_situp' || item === 'f_pullup') placeholder = '个';
+
+    html += `<tr>
+      <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
+      <td><input type="text" id="gf_${s.id}" value="${esc(curVal)}" placeholder="${placeholder}"
+        onchange="saveGroupFitness('${s.id}','${item}')" style="width:90px;padding:6px 8px;font-size:14px"></td>
+      <td><span id="gf_score_${s.id}" style="font-weight:bold;font-size:15px">${calcFitnessScore(s, item)}</span></td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function calcFitnessScore(s, item) {
+  s.fitness = s.fitness || {};
+  const val = s.fitness[item];
+  if (!val) return '';
+  if (item === 'f_50m') return scoreTime(parseFloat(val), s.gender === '女' ? FEMALE_50M : MALE_50M) + '分';
+  if (item === 'f_800m') return scoreTime(timeToSec(val), FEMALE_800M) + '分';
+  if (item === 'f_1000m') return scoreTime(timeToSec(val), MALE_1000M) + '分';
+  if (item === 'f_lj') return scoreCount(parseFloat(val), s.gender === '女' ? FEMALE_LJ : MALE_LJ) + '分';
+  if (item === 'f_situp') return scoreCount(parseFloat(val), FEMALE_SITUPS) + '分';
+  if (item === 'f_pullup') return scoreCount(parseFloat(val), MALE_PULLUPS) + '分';
+  return '';
+}
+
+function saveGroupFitness(sid, item) {
+  const s = getStudent(sid);
+  if (!s) return;
+  s.fitness = s.fitness || {};
+  s.fitness[item] = document.getElementById('gf_' + sid).value.trim();
+  saveDB();
+  document.getElementById('gf_score_' + sid).textContent = calcFitnessScore(s, item);
+}
+
 // ========== SWIM ==========
 function loadSwim() {
   const sid = $('swimStudent').value;
@@ -865,6 +993,73 @@ function calcSwim(s) {
   const swTech = Math.min(10, Math.max(0, parseFloat(sw.sw_tech) || 0));
   const sw25 = sw25Raw; // 1:1 mapping, max 10
   return { sw25, sw50perf, swTech, sunny: Math.min(10, Math.max(0, s.sunny || 0)) };
+}
+
+// ========== GROUP SWIM ==========
+function loadGroupSwim() {
+  const group = $('swimGroup').value;
+  const item = $('swimItem').value;
+  const container = $('groupSwimContent');
+  if (!group || !item) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和测试项目</div>';
+    return;
+  }
+  const students = DB.students.filter(s => (s.group || '').trim() === group);
+  if (students.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">该课程时间暂无学生</div>';
+    return;
+  }
+  const tips = { sw_25m: '秒，如 28', sw_50m: "分'秒\" 如 1'30", sw_tech: '0-10', sw_sunny: '0-10' };
+  const unit = { sw_25m: '秒', sw_50m: '成绩', sw_tech: '得分', sw_sunny: '得分' };
+  const isScore = item === 'sw_tech' || item === 'sw_sunny';
+
+  let html = `<div style="overflow-x:auto"><table>
+    <thead><tr><th>姓名</th><th>学号</th><th>${unit[item]||''}</th><th style="min-width:120px">成绩</th></tr></thead><tbody>`;
+  for (const s of students) {
+    s.swim = s.swim || {};
+    let curVal;
+    if (item === 'sw_sunny') curVal = s.sunny || '';
+    else curVal = s.swim[item] || '';
+
+    let score = '';
+    if (curVal) {
+      if (item === 'sw_25m') {
+        const tbl = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
+        score = scoreTime(parseFloat(curVal), tbl) + '分/10';
+      } else if (item === 'sw_50m') {
+        const tbl = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
+        const r = scoreTime(parseFloat(curVal), tbl);
+        score = r > 0 ? r + '分/30' : '';
+      } else if (item === 'sw_tech') {
+        score = curVal + '分/10';
+      } else if (item === 'sw_sunny') {
+        score = curVal + '分/10';
+      }
+    }
+
+    html += `<tr>
+      <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
+      <td style="font-weight:bold">${score}</td>
+      <td><input type="text" id="gs_${s.id}" value="${esc(curVal||'')}" placeholder="${tips[item]||''}"
+        onchange="saveGroupSwim('${s.id}','${item}')" style="width:100px;padding:6px 8px;font-size:14px"></td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function saveGroupSwim(sid, item) {
+  const s = getStudent(sid);
+  if (!s) return;
+  const val = document.getElementById('gs_' + sid).value.trim();
+  if (item === 'sw_sunny') {
+    s.sunny = parseFloat(val) || 0;
+  } else {
+    s.swim = s.swim || {};
+    s.swim[item] = val;
+  }
+  saveDB();
+  loadGroupSwim();
 }
 
 function calcTotal(s) {
