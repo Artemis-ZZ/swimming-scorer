@@ -169,6 +169,20 @@ input[type="file"] { display: none; }
     </div>
     <button class="btn btn-outline btn-sm mt" onclick="clearAll()">🗑 清空全部</button>
   </div>
+
+  <div class="card">
+    <h2>💾 数据备份 & 迁移</h2>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:8px">
+      导出备份：将在手机上的数据保存成文件 → 发送到电脑<br>
+      导入恢复：打开电脑上的备份文件 → 数据同步到手机
+    </p>
+    <div class="form-row">
+      <button class="btn btn-primary btn-block" onclick="exportData()">📤 导出数据</button>
+      <button class="btn btn-outline btn-block" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button>
+    </div>
+    <input type="file" id="importFileInput" accept=".json" onchange="importData(event)" style="display:none">
+    <p id="importMsg" style="font-size:12px;color:var(--text2);margin-top:4px"></p>
+  </div>
 </div>
 
 <!-- ==================== 考勤页 ==================== -->
@@ -812,6 +826,46 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '成绩总览');
   XLSX.writeFile(wb, '游泳课成绩.xlsx');
+}
+
+// ========== DATA BACKUP ==========
+function exportData() {
+  const data = JSON.stringify(DB, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const date = new Date().toISOString().slice(0,10);
+  a.download = `游泳课成绩_备份_${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('importMsg').textContent = '✅ 导出成功，文件已下载';
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.students || !Array.isArray(data.students)) {
+        alert('❌ 文件格式错误，不是有效的备份文件');
+        return;
+      }
+      const count = data.students.length;
+      if (!confirm(`即将导入 ${count} 名学生的数据，覆盖当前全部 ${DB.students.length} 条数据。确定？`)) return;
+      DB = data;
+      saveDB();
+      renderStudents();
+      updateCount();
+      $('importMsg').textContent = `✅ 成功导入 ${count} 名学生数据`;
+      event.target.value = '';
+    } catch(err) {
+      alert('❌ 解析失败: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ========== INIT ==========
