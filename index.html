@@ -205,8 +205,28 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
 <!-- ==================== 考勤页 ==================== -->
 <div class="page" id="page-attendance">
+  <div class="card">
+    <h2>📋 课程时间点名</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="attGroup" onchange="loadGroupAttendance()">
+          <option value="">-- 请选择 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>日期</label>
+        <input type="date" id="attGroupDate" onchange="loadGroupAttendance()">
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+      点按符号标记出勤状态：<span style="color:var(--success)">✓出勤</span> <b>○</b>旷课 <b>◎</b>病假 <b>⊕</b>事假 <b>√</b>公假 <b>△</b>见习
+    </p>
+    <div id="groupAttContent">
+      <div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和日期</div>
+    </div>
+  </div>
+
   <div class="card" id="attStudentSelector">
-    <h2>选择学生</h2>
+    <h2>🔍 查看单个学生考勤详情</h2>
     <select id="attStudent" onchange="loadAttendance()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -415,7 +435,11 @@ document.getElementById('nav').addEventListener('click', function(e) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   $('page-' + page).classList.add('active');
   if (page === 'students') renderStudents();
-  if (page === 'attendance') populateStudentSelect('attStudent');
+  if (page === 'attendance') {
+    populateStudentSelect('attStudent');
+    populateGroupSelect();
+    $('attGroupDate').value = new Date().toISOString().split('T')[0];
+  }
   if (page === 'fitness') populateStudentSelect('fitStudent');
   if (page === 'swim') populateStudentSelect('swimStudent');
   if (page === 'overview') renderOverview();
@@ -567,6 +591,15 @@ function populateStudentSelect(elId) {
   if (cur) sel.value = cur;
 }
 
+function populateGroupSelect() {
+  const sel = $('attGroup');
+  const cur = sel.value;
+  const groups = [...new Set(DB.students.map(s => (s.group || '').trim()).filter(g => g))];
+  sel.innerHTML = '<option value="">-- 请选择 --</option>' +
+    groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
 function getStudent(id) { return DB.students.find(s => s.id === id); }
 function esc(s) {
   const d = document.createElement('div');
@@ -651,6 +684,58 @@ function renderAttLog(s) {
       <span><span class="tag ${a.type==='旷课'?'tag-danger':a.type==='见习'?'tag-info':'tag-warn'}">${a.type}</span> ${a.date} ${a.note?esc(a.note):''}</span>
       <span class="remove-btn" onclick="removeAttendance('${s.id}',${i})">✕</span>
     </div>`).join('');
+}
+
+// ========== GROUP ATTENDANCE ==========
+function loadGroupAttendance() {
+  const group = $('attGroup').value;
+  const date = $('attGroupDate').value;
+  const container = $('groupAttContent');
+  if (!group || !date) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和日期</div>';
+    return;
+  }
+  const students = DB.students.filter(s => (s.group || '').trim() === group);
+  if (students.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">该课程时间暂无学生</div>';
+    return;
+  }
+  const ATT_SYMBOL = { '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√', '见习': '△' };
+  const attTypes = ['旷课','病假','事假','公假','见习'];
+
+  let html = `<div style="overflow-x:auto"><table>
+    <thead><tr><th>姓名</th><th>学号</th><th>状态</th><th style="min-width:200px">标记</th></tr></thead><tbody>`;
+  for (const s of students) {
+    const att = (s.attendance || []).filter(a => a.date === date);
+    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '✓';
+    const color = symbol === '✓' ? 'var(--success)' : 'var(--danger)';
+    html += `<tr>
+      <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
+      <td style="font-size:20px;font-weight:bold;color:${color}">${symbol}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px;color:var(--success);border-color:var(--success)">✓出勤</button>`;
+    for (const t of attTypes) {
+      const sym = ATT_SYMBOL[t];
+      html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:12px">${sym}${t}</button>`;
+    }
+    html += `</td></tr>`;
+  }
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function markGroupAtt(sid, date, type) {
+  const s = getStudent(sid);
+  if (!s) return;
+  s.attendance = s.attendance || [];
+  // Remove any existing attendance for this date
+  s.attendance = s.attendance.filter(a => a.date !== date);
+  // If type is empty, that means "出勤" - just clear (no record = present)
+  if (type) {
+    s.attendance.push({ type, date, note: '' });
+  }
+  saveDB();
+  loadGroupAttendance();
 }
 
 // ========== FITNESS ==========
