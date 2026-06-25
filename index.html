@@ -1144,7 +1144,7 @@ function loadGroupSunny() {
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><select id="gsun_${s.id}" onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px">
-        ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}分</option>`).join('')}
+        ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}</option>`).join('')}
       </select></td>
     </tr>`;
   }
