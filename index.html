@@ -177,6 +177,12 @@ input[type="file"] { display: none; }
       导入恢复：打开电脑上的备份文件 → 数据同步到手机
     </p>
     <div class="form-row">
+      <div style="flex:1"><label>📅 学期开始日期</label>
+        <input type="date" id="semesterStart" onchange="saveSemesterStart()">
+        <span style="font-size:11px;color:var(--text2);display:block;margin-top:2px">考勤记录将自动填入对应周次的出勤格内 ○旷课 ◎病假 ⊕事假 √公假 △见习</span>
+      </div>
+    </div>
+    <div class="form-row">
       <button class="btn btn-primary btn-block" onclick="exportData()">📤 导出数据</button>
       <button class="btn btn-outline btn-block" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button>
     </div>
@@ -275,6 +281,7 @@ function loadDB() {
   const raw = localStorage.getItem(STORE_KEY);
   if (raw) { try { DB = JSON.parse(raw); } catch(e) { DB = { students: [] }; } }
   if (!DB.students) DB.students = [];
+  if (!DB.startDate) DB.startDate = '';
 }
 loadDB();
 
@@ -828,6 +835,10 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
 
   for (const [className, students] of Object.entries(groups)) {
+    // Attendance symbol mapping
+    const ATT_SYMBOL = { '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√', '见习': '△' };
+    const startDate = DB.startDate ? new Date(DB.startDate + 'T00:00:00') : null;
+
     // Build rows matching the official template format
     // Row 1: title (中国传媒大学体育部) - merge later
     // Row 2: 学生考勤考核成绩登记表
@@ -900,6 +911,21 @@ function exportExcel() {
       r[2] = s.name;                      // C: 姓名
       r[3] = s.class;                     // D: 班级
       r[20] = att.score;                  // U: 表现总分
+      // Fill weekly attendance columns (E-T = indices 4-19)
+      if (startDate && s.attendance && s.attendance.length > 0) {
+        for (const a of s.attendance) {
+          if (!a.date) continue;
+          const ad = new Date(a.date + 'T00:00:00');
+          const diffMs = ad - startDate;
+          if (diffMs < 0) continue;
+          const weekNum = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+          if (weekNum >= 1 && weekNum <= 16) {
+            const sym = ATT_SYMBOL[a.type] || '○';
+            const idx = 3 + weekNum; // col index (E=4, so week1→4)
+            r[idx] = r[idx] ? r[idx] + sym : sym;
+          }
+        }
+      }
       if (s.gender === '女') {
         r[21] = f.f_50m || '';            // V: 50m成绩
         r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50M) || ''; // W: 50m分数
@@ -1054,9 +1080,20 @@ function importData(event) {
   reader.readAsText(file);
 }
 
+// ========== SEMESTER START DATE ==========
+function saveSemesterStart() {
+  DB.startDate = document.getElementById('semesterStart').value;
+  saveDB();
+}
+function loadSemesterStart() {
+  const el = document.getElementById('semesterStart');
+  if (el && DB.startDate) el.value = DB.startDate;
+}
+
 // ========== INIT ==========
 updateCount();
 renderStudents();
+loadSemesterStart();
 </script>
 </body>
 </html>
