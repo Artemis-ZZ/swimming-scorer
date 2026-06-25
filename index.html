@@ -1137,6 +1137,10 @@ function loadGroupSunny() {
     <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th></tr></thead><tbody>`;
   for (const s of students) {
     const val = s.sunny !== undefined && s.sunny !== null && s.sunny !== '' ? s.sunny : 10;
+    // 默认值自动保存
+    if (s.sunny === undefined || s.sunny === null || s.sunny === '') {
+      s.sunny = 10;
+    }
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><select id="gsun_${s.id}" onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px">
@@ -1146,6 +1150,7 @@ function loadGroupSunny() {
   }
   html += '</tbody></table></div>';
   container.innerHTML = html;
+  saveDB(); // 保存默认阳光长跑值
 }
 
 function saveGroupSunny(sid) {
