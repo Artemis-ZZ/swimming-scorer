@@ -370,6 +370,13 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
     <div><label>按维度筛选</label><select id="statGroup" onchange="refreshStats()"><option value="all">全部</option><option value="group">按课程时间</option><option value="class">按班级</option></select></div>
     <div class="stats-grid mt" id="statsGrid"></div>
   </div>
+  <div class="card" id="studentDetailCard">
+    <h2>🔍 查询单个学生</h2>
+    <select id="detailStudent" onchange="showStudentDetail()">
+      <option value="">-- 请选择 --</option>
+    </select>
+    <div id="studentDetailContent" style="margin-top:12px"></div>
+  </div>
 </div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -524,7 +531,10 @@ document.getElementById('nav').addEventListener('click', function(e) {
   if (page === 'sunny') {
     populateGroupSelect('sunnyGroup');
   }
-  if (page === 'overview') renderOverview();
+  if (page === 'overview') {
+    populateStudentSelect('detailStudent');
+    renderOverview();
+  }
 });
 
 // ========== STUDENT MANAGEMENT ==========
@@ -1324,6 +1334,67 @@ function refreshStats() {
     </div>`;
   }
   $('statsGrid').innerHTML = html;
+}
+
+// ========== STUDENT DETAIL QUERY ==========
+function showStudentDetail() {
+  const sid = $('detailStudent').value;
+  const container = $('studentDetailContent');
+  if (!sid) { container.innerHTML = ''; return; }
+  const s = getStudent(sid);
+  if (!s) { container.innerHTML = ''; return; }
+  const f = s.fitness || {};
+  const sw = s.swim || {};
+  const att = calcAttendance(s);
+  const fit = calcFitness(s);
+  const swim = calcSwim(s);
+
+  let html = `<table style="font-size:13px">
+    <tr><td style="width:100px;color:var(--text2)">姓名</td><td><b>${esc(s.name)}</b></td><td style="width:80px;color:var(--text2)">学号</td><td>${esc(s.sid)}</td><td style="width:80px;color:var(--text2)">性别</td><td>${s.gender}</td></tr>
+    <tr><td style="color:var(--text2)">课程时间</td><td>${esc(s.group||'')}</td><td style="color:var(--text2)">班级</td><td colspan="3">${esc(s.class)}</td></tr>
+    <tr style="background:var(--bg)"><td colspan="6"><b>📅 考勤</b> — 得分：${att.score}/10 ${att.disqualified?'<span class="tag tag-danger">取消资格</span>':''}</td></tr>`;
+  
+  if (s.attendance && s.attendance.length > 0) {
+    const sorted = [...s.attendance].sort((a,b) => new Date(a.date) - new Date(b.date));
+    html += '<tr><td colspan="6" style="font-size:12px">';
+    for (const a of sorted) {
+      const sym = { '出勤':'✓','旷课':'○','病假':'◎','事假':'⊕','公假':'√','见习':'△' }[a.type] || a.type;
+      html += `<span style="margin-right:8px">${a.date} ${sym}${a.type}</span>`;
+    }
+    html += '</td></tr>';
+  } else {
+    html += '<tr><td colspan="6" style="font-size:12px;color:var(--text2)">无考勤记录</td></tr>';
+  }
+
+  html += `<tr style="background:var(--bg)"><td colspan="6"><b>💪 身体素质</b> — 总分：${fit.total.toFixed(1)}/30</td></tr>`;
+  
+  if (s.gender === '女') {
+    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '秒');
+    html += fitnessDetailRow('800m跑', f.f_800m, fit.f_800m, '');
+    html += fitnessDetailRow('立定跳远', f.f_lj, fit.f_lj, 'cm');
+    html += fitnessDetailRow('仰卧起坐', f.f_situp, fit.f_situp, '个');
+  } else {
+    html += fitnessDetailRow('50m跑', f.f_50m, fit.f_50m, '秒');
+    html += fitnessDetailRow('1000m跑', f.f_1000m, fit.f_1000m, '');
+    html += fitnessDetailRow('立定跳远', f.f_lj, fit.f_lj, 'cm');
+    html += fitnessDetailRow('引体向上', f.f_pullup, fit.f_pullup, '个');
+  }
+
+  html += `<tr style="background:var(--bg)"><td colspan="6"><b>🏊 游泳</b></td></tr>`;
+  html += fitnessDetailRow('25m蛙泳腿', sw.sw_25m, swim.sw25, '秒');
+  html += fitnessDetailRow('50m蛙泳', sw.sw_50m, swim.sw50perf, '');
+  html += fitnessDetailRow('技术评定', sw.sw_tech, swim.swTech, '分');
+  html += `<tr style="background:var(--bg)"><td colspan="6"><b>☀️ 阳光长跑</b> — ${s.sunny!==undefined&&s.sunny!==null?s.sunny:'未录入'}/10</td></tr>`;
+
+  html += `<tr style="background:var(--bg)"><td colspan="6"><b>📊 总分：${calcTotal(s).total.toFixed(1)}/100</b> ${s.exempt?'<span class="tag tag-info">免修</span>':''}</td></tr>`;
+  html += '</table>';
+  container.innerHTML = html;
+}
+
+function fitnessDetailRow(label, raw, score, unit) {
+  const rawStr = raw ? (unit ? raw + unit : raw) : '—';
+  const scoreStr = score !== undefined ? score + '分' : '—';
+  return `<tr><td style="color:var(--text2);width:100px">${label}</td><td>${rawStr}</td><td style="width:80px;color:var(--primary);font-weight:bold">${scoreStr}</td><td colspan="3"></td></tr>`;
 }
 
 // ========== EXPORT (正式成绩册格式) ==========
