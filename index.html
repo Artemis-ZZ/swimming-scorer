@@ -176,7 +176,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
     <h2>👥 学生列表 <span style="font-size:12px;color:var(--text2)" id="listInfo"></span></h2>
     <div style="overflow-x:auto">
       <table id="studentTable">
-        <thead><tr><th style="width:32px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th>课程时间</th><th>班级</th><th>姓名</th><th>学号</th><th>性别</th><th>操作</th></tr></thead>
+        <thead><tr><th style="width:32px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th>课程时间</th><th>班级</th><th>姓名</th><th>学号</th><th>性别</th><th>状态</th><th>操作</th></tr></thead>
         <tbody id="studentTbody"></tbody>
       </table>
     </div>
@@ -566,6 +566,7 @@ function handleFile(e) {
           sid,
           gender,
           group: importGroup || '',
+          exempt: false,
           attendance: [],
           fitness: {},
           swim: {},
@@ -597,6 +598,7 @@ function addStudent() {
     id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
     class: cls, name, sid, gender,
     group: group || '',
+    exempt: false,
     attendance: [], fitness: {}, swim: {}, sunny: null
   });
   saveDB();
@@ -620,6 +622,15 @@ function clearAll() {
   saveDB();
   renderStudents();
   updateCount();
+}
+
+// ========== EXEMPT ==========
+function toggleExempt(sid) {
+  const s = getStudent(sid);
+  if (!s) return;
+  s.exempt = !s.exempt;
+  saveDB();
+  renderStudents();
 }
 
 // ========== BATCH DELETE ==========
@@ -648,15 +659,18 @@ function batchDelete() {
 function renderStudents() {
   const tbody = $('studentTbody');
   if (DB.students.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text2);padding:24px">暂无学生，请导入或手动添加</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--text2);padding:24px">暂无学生，请导入或手动添加</td></tr>';
   } else {
-    tbody.innerHTML = DB.students.map((s,i) => `
-      <tr>
+    tbody.innerHTML = DB.students.map((s,i) => {
+      const isExempt = s.exempt === true;
+      return `<tr ${isExempt?'style="color:var(--text2);text-decoration:line-through"':''}>
         <td><input type="checkbox" class="student-cb" value="${s.id}" onclick="updateBatchBtn()"></td>
         <td>${esc(s.group||'')}</td><td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
         <td>${s.gender}</td>
+        <td><span class="tag ${isExempt?'tag-info':'tag-warn'}" onclick="toggleExempt('${s.id}')" style="cursor:pointer">${isExempt?'免修':'正常'}</span></td>
         <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">删除</button></td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   }
   $('listInfo').textContent = `共 ${DB.students.length} 人`;
 }
@@ -911,8 +925,6 @@ function loadGroupFitness() {
     return;
   }
   // Determine which gender this item is for
-  const femaleItems = ['f_50m','f_800m','f_situp','f_lj'];
-  const maleItems = ['f_50m','f_1000m','f_pullup','f_lj'];
   const isFemaleOnly = item === 'f_800m' || item === 'f_situp';
   const isMaleOnly = item === 'f_1000m' || item === 'f_pullup';
 
@@ -1010,10 +1022,22 @@ function calcSwim(s) {
   const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
   const sw25Raw = scoreTime(timeToSec(sw.sw_25m), table25);
   const sw50Raw = scoreTime(timeToSec(sw.sw_50m), table50);
-  // Map 50m raw 18-30 → 30 points
-  const sw50perf = sw50Raw > 0 ? Math.round((sw50Raw / 30) * 30) : 0;
-  const swTech = Math.min(10, Math.max(0, parseFloat(sw.sw_tech) || 0));
-  const sw25 = sw25Raw; // 1:1 mapping, max 10
+  const sw50perf = sw50Raw;
+  const sw25 = sw25Raw;
+  // 技术评定：用手动设置的值，没设置时从50m分数推导
+  const hasTech = sw.sw_tech !== undefined && sw.sw_tech !== null && sw.sw_tech !== '';
+  let swTech;
+  if (hasTech) {
+    swTech = parseInt(sw.sw_tech) || 0;
+  } else if (sw50Raw > 0 && sw50Raw <= 18) {
+    swTech = 6;
+  } else if (sw50Raw >= 19 && sw50Raw <= 25) {
+    swTech = 8;
+  } else if (sw50Raw >= 26) {
+    swTech = 10;
+  } else {
+    swTech = 0;
+  }
   return { sw25, sw50perf, swTech, sunny: Math.min(10, Math.max(0, s.sunny || 0)) };
 }
 
@@ -1066,8 +1090,7 @@ function loadGroupSwim() {
       <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:60px;padding:4px;font-size:13px">
         <option value="" ${displayTech===''?'selected':''}>-</option>
         ${Array.from({length:11},(_,i)=>`<option value="${i}" ${displayTech==i?'selected':''}>${i}</option>`).join('')}
-      </select>
-      <div style="font-size:9px;color:var(--text2);line-height:1.2;margin-top:2px">自动:50m未完成→0 / 完成→6 / 19-25分→8 / 26分以上→10</div></td>
+      </select></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
@@ -1081,9 +1104,16 @@ function saveGroupSwimField(sid, field) {
   const idMap = { sw_25m: 'gsw25_', sw_50m: 'gsw50_', sw_tech: 'gswtech_' };
   const val = document.getElementById(idMap[field] + sid).value.trim();
   s.swim[field] = val;
-  // 当50m成绩变化时，重置技术评定为自动计算
+  // 当50m成绩变化时，自动重新计算并保存技术评定
   if (field === 'sw_50m') {
     delete s.swim.sw_tech;
+    const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
+    const s50raw = val ? scoreTime(timeToSec(val), table50) : 0;
+    let autoTech = 0;
+    if (s50raw > 0 && s50raw <= 18) autoTech = 6;
+    else if (s50raw >= 19 && s50raw <= 25) autoTech = 8;
+    else if (s50raw >= 26) autoTech = 10;
+    if (s50raw > 0) s.swim.sw_tech = String(autoTech);
   }
   saveDB();
   loadGroupSwim();
@@ -1105,11 +1135,12 @@ function loadGroupSunny() {
   let html = `<div style="overflow-x:auto"><table>
     <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th></tr></thead><tbody>`;
   for (const s of students) {
-    const val = s.sunny || '';
+    const val = s.sunny !== undefined && s.sunny !== null && s.sunny !== '' ? s.sunny : 10;
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
-      <td><input type="text" id="gsun_${s.id}" value="${esc(val)}" placeholder="0-10"
-        onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px"></td>
+      <td><select id="gsun_${s.id}" onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px">
+        ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}分</option>`).join('')}
+      </select></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
@@ -1119,7 +1150,7 @@ function loadGroupSunny() {
 function saveGroupSunny(sid) {
   const s = getStudent(sid);
   if (!s) return;
-  s.sunny = parseFloat(document.getElementById('gsun_' + sid).value) || 0;
+  s.sunny = parseInt(document.getElementById('gsun_' + sid).value) || 0;
   saveDB();
 }
 
@@ -1131,7 +1162,8 @@ function calcTotal(s) {
     att: att.score,
     fit: fit.total,
     sw25: swim.sw25,
-    sw50: swim.sw50perf + swim.swTech,
+    sw50: swim.sw50perf,
+    tech: swim.swTech,
     sunny: swim.sunny,
     total: att.score + fit.total + swim.sw25 + swim.sw50perf + swim.swTech + swim.sunny,
     disqualified: att.disqualified
@@ -1145,7 +1177,7 @@ function renderOverview() {
 
   thead.innerHTML = `<tr>
     <th>班级</th><th>姓名</th><th>学号</th><th>性别</th>
-    <th>考勤</th><th>身体素质</th><th>25m蛙腿</th><th>50m蛙泳</th><th>阳光长跑</th>
+    <th>考勤</th><th>身体素质</th><th>25m蛙腿</th><th>50m蛙泳</th><th>技术评定</th><th>阳光长跑</th>
     <th>总分</th><th>状态</th>
   </tr>`;
 
@@ -1156,9 +1188,9 @@ function renderOverview() {
       const t = calcTotal(s);
       return `<tr class="${t.disqualified?'disqualified':''}">
         <td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
-        <td>${t.att}</td><td>${t.fit.toFixed(1)}</td><td>${t.sw25}</td><td>${t.sw50}</td><td>${t.sunny}</td>
+        <td>${t.att}</td><td>${t.fit.toFixed(1)}</td><td>${t.sw25}</td><td>${t.sw50}</td><td>${t.tech}</td><td>${t.sunny}</td>
         <td><b class="${t.total>=60?'score-good':'score-bad'}">${t.total.toFixed(1)}</b></td>
-        <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':'<span class="tag tag-info">正常</span>'}</td>
+        <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':s.exempt?'<span class="tag tag-info">免修</span>':'<span class="tag tag-info">正常</span>'}</td>
       </tr>`;
     }).join('');
   }
@@ -1218,7 +1250,8 @@ function exportExcel() {
 
   for (const [className, students] of Object.entries(groups)) {
     // Attendance symbol mapping
-    const ATT_SYMBOL = { '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√', '见习': '△' };
+    const ATT_SYMBOL = { '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√' };
+    // 见习(△)和出勤一样，不导出标记
     const startDate = DB.startDate ? new Date(DB.startDate + 'T00:00:00') : null;
 
     // Build rows matching the official template format
@@ -1328,24 +1361,24 @@ function exportExcel() {
         r[28] = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS) || ''; // AC: 引体向上分数
       }
       r[29] = t.fit.toFixed(1);           // AD: 素质总分
-      r[30] = sw.sw_25m ? sw.sw_25m + '"' : '';  // AE: 25m成绩
+      r[30] = sw.sw_25m ? secToTime(timeToSec(sw.sw_25m)) : ''; // AE: 25m成绩
       const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
       r[31] = scoreTime(timeToSec(sw.sw_25m), table25) || '';   // AF: 25m得分
-      r[32] = sw.sw_50m ? secToTime(parseFloat(sw.sw_50m)) : ''; // AG: 50m成绩
+      r[32] = sw.sw_50m ? secToTime(timeToSec(sw.sw_50m)) : ''; // AG: 50m成绩
       const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
       const sw50raw = scoreTime(timeToSec(sw.sw_50m), table50);
       r[33] = sw50raw > 0 ? sw50raw : '';  // AH: 50m得分(30分制，原始分18-30直接对应)
-      r[34] = sw.sw_tech || '';           // AI: 技术评定
+      r[34] = sw.sw_tech ?? '';           // AI: 技术评定
       const af = parseFloat(r[31]) || 0;
       const ah = parseFloat(r[33]) || 0;
       const ai = parseFloat(r[34]) || 0;
       r[35] = (af + ah + ai) || '';       // AJ: 专项总分(25m+50m+技评)
       r[36] = t.sunny || '';              // AK: 阳光长跑
       r[37] = t.total.toFixed(1);         // AL: 总评
-      if (t.disqualified) r[38] = '取消资格';
-      if (s.attendance && s.attendance.length > 0) {
-        r[38] = (r[38] ? r[38] + '; ' : '') + `考勤${att.score}分`;
-      }
+      const notes = [];
+      if (s.exempt) notes.push('免修');
+      if (t.disqualified) notes.push('取消资格');
+      r[38] = notes.join('; ');           // AM: 备注
       rows.push(r);
     }
 
