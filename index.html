@@ -270,8 +270,8 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         <select id="fitItem" onchange="loadGroupFitness()">
           <option value="">-- 请选择 --</option>
           <option value="f_50m">50m跑（秒）</option>
-          <option value="f_800m">800m跑 女（分'秒"）</option>
-          <option value="f_1000m">1000m跑 男（分'秒"）</option>
+          <option value="f_800m">800m跑 女（分:秒）</option>
+          <option value="f_1000m">1000m跑 男（分:秒）</option>
           <option value="f_situp">仰卧起坐 女（个）</option>
           <option value="f_pullup">引体向上 男（个）</option>
           <option value="f_lj">立定跳远（cm）</option>
@@ -856,7 +856,7 @@ function loadGroupAttendance() {
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
-      <td style="font-size:20px;font-weight:bold;${clr?'color:'+clr:''}">${skip?'✓':symbol}</td>
+      <td style="font-size:20px;font-weight:bold;${skip?'color:#000':clr?'color:'+clr:''}">${skip?'✓':symbol}</td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px" ${skip?'disabled':''}>出勤</button>`;
     for (const t of attTypes) {
@@ -1008,7 +1008,7 @@ function loadGroupFitness() {
     }
     let placeholder = '';
     if (item === 'f_50m') placeholder = '秒，如 7.5';
-    else if (item === 'f_800m' || item === 'f_1000m') placeholder = "分'秒\" 如 3'30";
+    else if (item === 'f_800m' || item === 'f_1000m') placeholder = "分:秒 如 3:30";
     else if (item === 'f_lj') placeholder = 'cm';
     else if (item === 'f_situp' || item === 'f_pullup') placeholder = '个';
 
@@ -1056,10 +1056,10 @@ function loadSwim() {
   const sw = s.swim;
   const html = `
     <div class="form-row"><div style="flex:0 0 120px"><label>25m蛙泳腿</label></div>
-      <div><input id="sw_25m" value="${sw.sw_25m||''}" placeholder="秒，如 28"></div>
+      <div><input id="sw_25m" value="${sw.sw_25m||''}" placeholder="秒或分:秒"></div>
       <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_25m_score"></span></div></div>
     <div class="form-row"><div style="flex:0 0 120px"><label>50m蛙泳</label></div>
-      <div><input id="sw_50m" value="${sw.sw_50m||''}" placeholder="${s.gender==='女'?'秒，如 65':'秒，如 60'}"></div>
+      <div><input id="sw_50m" value="${sw.sw_50m||''}" placeholder="分:秒"></div>
       <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_50m_score"></span></div></div>
     <div class="form-row"><div style="flex:0 0 120px"><label>技术评定</label></div>
       <div><input id="sw_tech" value="${sw.sw_tech||''}" placeholder="0-10分，手动打分"></div></div>
@@ -1153,10 +1153,10 @@ function loadGroupSwim() {
       <td><input type="text" id="gswNote_${s.id}" value="${esc(s.note||'')}" placeholder="分组"
         onchange="saveSwimNote('${s.id}')" style="width:50px;padding:4px 6px;font-size:13px"></td>
       <td>${esc(s.sid)}</td><td>${s.gender}</td>
-      <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒 如 28 或 1'05"
+      <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒或分:秒"
         onchange="saveGroupSwimField('${s.id}','sw_25m')" style="width:60px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s25}</td>
-      <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="如 1'30"
+      <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="分:秒"
         onchange="saveGroupSwimField('${s.id}','sw_50m')" style="width:70px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s50}</td>
       <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:60px;padding:4px;font-size:13px">
