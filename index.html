@@ -1005,7 +1005,7 @@ function calcSwim(s) {
   const sw = s.swim || {};
   const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
   const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
-  const sw25Raw = scoreTime(parseFloat(sw.sw_25m), table25);
+  const sw25Raw = scoreTime(timeToSec(sw.sw_25m), table25);
   const sw50Raw = scoreTime(timeToSec(sw.sw_50m), table50);
   // Map 50m raw 18-30 → 30 points
   const sw50perf = sw50Raw > 0 ? Math.round((sw50Raw / 30) * 30) : 0;
@@ -1042,13 +1042,13 @@ function loadGroupSwim() {
     const v25 = s.swim.sw_25m || '';
     const v50 = s.swim.sw_50m || '';
     const vTech = s.swim.sw_tech || '';
-    const s25 = v25 ? scoreTime(parseFloat(v25), tbl25) + '分' : '';
+    const s25 = v25 ? scoreTime(timeToSec(v25), tbl25) + '分' : '';
     const s50raw = v50 ? scoreTime(timeToSec(v50), tbl50) : 0;
     const s50 = s50raw > 0 ? s50raw + '分' : '';
 
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
-      <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒"
+      <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒 如 28 或 1'05"
         onchange="saveGroupSwimField('${s.id}','sw_25m')" style="width:60px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s25}</td>
       <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="如 1'30"
@@ -1314,7 +1314,7 @@ function exportExcel() {
       r[29] = t.fit.toFixed(1);           // AD: 素质总分
       r[30] = sw.sw_25m ? sw.sw_25m + '"' : '';  // AE: 25m成绩
       const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
-      r[31] = scoreTime(parseFloat(sw.sw_25m), table25) || '';   // AF: 25m得分
+      r[31] = scoreTime(timeToSec(sw.sw_25m), table25) || '';   // AF: 25m得分
       r[32] = sw.sw_50m ? secToTime(parseFloat(sw.sw_50m)) : ''; // AG: 50m成绩
       const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
       const sw50raw = scoreTime(timeToSec(sw.sw_50m), table50);
