@@ -858,10 +858,10 @@ function loadGroupAttendance() {
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
       <td style="font-size:20px;font-weight:bold;${clr?'color:'+clr:''}">${skip?'✓':symbol}</td>
       <td>
-        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px">出勤</button>`;
+        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px" ${skip?'disabled':''}>出勤</button>`;
     for (const t of attTypes) {
       const sym = ATT_SYMBOL[t];
-      html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:12px">${sym}${t}</button>`;
+      html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:12px" ${skip?'disabled':''}>${sym}${t}</button>`;
     }
     html += `</td></tr>`;
   }
@@ -893,7 +893,7 @@ function loadGroupAttendance() {
 
 function markGroupAtt(sid, date, type) {
   const s = getStudent(sid);
-  if (!s) return;
+  if (!s || s.skipAtt === true) return;  // 免考勤不允许标记
   s.attendance = s.attendance || [];
   // Remove any existing attendance for this date
   s.attendance = s.attendance.filter(a => a.date !== date);
