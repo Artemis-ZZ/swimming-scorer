@@ -848,11 +848,15 @@ function loadGroupAttendance() {
       const consCount = consecutiveJianxi(s);
       if (consCount >= 2) symbol = '△(' + consCount + ')';
     }
-    const color = symbol === '✓' ? 'var(--success)' : symbol.startsWith('△') ? 'var(--primary)' : symbol ? 'var(--danger)' : '';
+    // 颜色：出勤=绿，请假/旷课=红，见习=蓝
+    let clr = '';
+    if (symbol === '✓') clr = 'var(--success)';
+    else if (symbol.startsWith('△')) clr = 'var(--primary)';
+    else if (symbol) clr = 'var(--danger)';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
-      <td style="font-size:20px;font-weight:bold;${color?'color:'+color:''}">${skip?'✓':symbol}</td>
+      <td style="font-size:20px;font-weight:bold;${clr?'color:'+clr:''}">${skip?'✓':symbol}</td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px">出勤</button>`;
     for (const t of attTypes) {
