@@ -132,6 +132,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
   <button data-page="fitness">💪 身体素质</button>
   <button data-page="swim">🏊 游泳</button>
   <button data-page="sunny">☀️ 阳光长跑</button>
+  <button data-page="query">🔍 查询</button>
   <button data-page="overview">📊 总览</button>
 </nav>
 
@@ -356,16 +357,19 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
   </div>
 </div>
 
-<!-- ==================== 总览页 ==================== -->
-<div class="page" id="page-overview">
-  <div class="card" id="studentDetailCard">
+<!-- ==================== 查询页 ==================== -->
+<div class="page" id="page-query">
+  <div class="card">
     <h2>🔍 查询单个学生</h2>
     <select id="detailStudent" onchange="showStudentDetail()">
       <option value="">-- 请选择 --</option>
     </select>
     <div id="studentDetailContent" style="margin-top:12px"></div>
   </div>
+</div>
 
+<!-- ==================== 总览页 ==================== -->
+<div class="page" id="page-overview">
   <div class="card">
     <h2>📊 成绩总览</h2>
     <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 导出 Excel</button>
@@ -531,6 +535,9 @@ document.getElementById('nav').addEventListener('click', function(e) {
   }
   if (page === 'sunny') {
     populateGroupSelect('sunnyGroup');
+  }
+  if (page === 'query') {
+    populateStudentSelect('detailStudent');
   }
   if (page === 'overview') {
     populateStudentSelect('detailStudent');
