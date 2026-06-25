@@ -1070,7 +1070,7 @@ function loadGroupSwim() {
 
   let html = `<div style="overflow-x:auto"><table>
     <thead><tr>
-      <th rowspan="2">姓名</th><th rowspan="2">学号</th><th rowspan="2">性别</th>
+      <th rowspan="2">姓名</th><th rowspan="2">备注</th><th rowspan="2">学号</th><th rowspan="2">性别</th>
       <th colspan="2">25m蛙泳腿</th><th colspan="2">50m蛙泳</th><th>技术评定</th>
     </tr><tr>
       <th>成绩（秒）</th><th>分数/10</th><th>成绩</th><th>分数/30</th><th>分数/10</th>
@@ -1093,7 +1093,10 @@ function loadGroupSwim() {
     const displayTech = vTech !== '' ? parseInt(vTech) : (s50raw > 0 ? autoTech : '');
 
     html += `<tr>
-      <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
+      <td>${esc(s.name)}</td>
+      <td><input type="text" id="gswNote_${s.id}" value="${esc(s.note||'')}" placeholder="分组"
+        onchange="saveSwimNote('${s.id}')" style="width:50px;padding:4px 6px;font-size:13px"></td>
+      <td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒 如 28 或 1'05"
         onchange="saveGroupSwimField('${s.id}','sw_25m')" style="width:60px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s25}</td>
@@ -1169,6 +1172,13 @@ function saveGroupSunny(sid) {
   const s = getStudent(sid);
   if (!s) return;
   s.sunny = parseInt(document.getElementById('gsun_' + sid).value) || 0;
+  saveDB();
+}
+
+function saveSwimNote(sid) {
+  const s = getStudent(sid);
+  if (!s) return;
+  s.note = document.getElementById('gswNote_' + sid).value.trim();
   saveDB();
 }
 
