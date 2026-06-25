@@ -848,7 +848,7 @@ function loadGroupAttendance() {
       const consCount = consecutiveJianxi(s);
       if (consCount >= 2) symbol = '△(' + consCount + ')';
     }
-    const color = symbol === '✓' || symbol.startsWith('△(') ? '' : symbol ? 'var(--danger)' : '';
+    const color = symbol === '✓' ? 'var(--success)' : symbol.startsWith('△') ? 'var(--primary)' : symbol ? 'var(--danger)' : '';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
