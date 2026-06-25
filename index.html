@@ -1283,8 +1283,8 @@ function renderOverview() {
       const t = calcTotal(s);
       return `<tr class="${t.disqualified?'disqualified':''}">
         <td>${esc(s.group||'')}</td><td>${esc(s.class)}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
-        <td>${s.exempt?0:t.att}</td><td>${s.exempt?'0.0':t.fit.toFixed(1)}</td><td>${s.exempt?0:t.sw25}</td><td>${s.exempt?0:t.sw50}</td><td>${s.exempt?0:t.tech}</td><td>${s.exempt?0:t.sunny}</td>
-        <td><b class="${t.total>=60?'score-good':'score-bad'}">${s.exempt?'0.0':t.total.toFixed(1)}</b></td>
+        <td>${s.exempt?'':t.att}</td><td>${s.exempt?'':t.fit.toFixed(1)}</td><td>${s.exempt?'':t.sw25}</td><td>${s.exempt?'':t.sw50}</td><td>${s.exempt?'':t.tech}</td><td>${s.exempt?'':t.sunny}</td>
+        <td><b class="${t.total>=60?'score-good':'score-bad'}">${s.exempt?'':t.total.toFixed(1)}</b></td>
         <td>${t.disqualified?'<span class="tag tag-danger">取消资格</span>':s.exempt?'<span class="tag tag-info">免修</span>':'<span class="tag tag-info">正常</span>'}</td>
       </tr>`;
     }).join('');
@@ -1386,8 +1386,8 @@ function showStudentDetail() {
   }
 
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>🏊 游泳</b></td></tr>`;
-  html += fitnessDetailRow('25m蛙泳腿', sw.sw_25m, swim.sw25, '秒');
-  html += fitnessDetailRow('50m蛙泳', sw.sw_50m, swim.sw50perf, '');
+  html += fitnessDetailRow('25m蛙泳腿', formatSwimTime(sw.sw_25m), swim.sw25, '秒');
+  html += fitnessDetailRow('50m蛙泳', formatSwimTime(sw.sw_50m), swim.sw50perf, '');
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>☀️ 阳光长跑</b> — ${s.sunny!==undefined&&s.sunny!==null?s.sunny:'未录入'}/10</td></tr>`;
   html += '</table>';
   container.innerHTML = html;
@@ -1397,6 +1397,19 @@ function fitnessDetailRow(label, raw, score, unit) {
   const rawStr = raw ? (unit ? raw + unit : raw) : '—';
   const scoreStr = score !== undefined ? score + '分' : '—';
   return `<tr><td style="color:var(--text2);width:100px">${label}</td><td>${rawStr}</td><td style="width:80px;color:var(--primary);font-weight:bold">${scoreStr}</td><td colspan="3"></td></tr>`;
+}
+
+function formatSwimTime(val) {
+  if (!val) return '';
+  const s = timeToSec(val);
+  if (s === null) return val;
+  return secToTimeColon(s);
+}
+function secToTimeColon(s) {
+  if (s === null || s === undefined) return '';
+  const m = Math.floor(s / 60);
+  const sec = Math.round(s % 60);
+  return m > 0 ? m + ':' + String(sec).padStart(2, '0') : String(sec);
 }
 
 // ========== EXPORT (正式成绩册格式) ==========
