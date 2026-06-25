@@ -1350,7 +1350,7 @@ function exportExcel() {
       }
       if (s.gender === '女') {
         r[21] = f.f_50m || '';            // V: 50m成绩
-        r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50m); r[22] = r[22] !== undefined ? r[22] : ''; // W: 50m分数
+        r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50M); r[22] = r[22] !== undefined ? r[22] : ''; // W: 50m分数
         r[23] = f.f_800m ? secToTime(timeToSec(f.f_800m)) : '';   // X: 800m成绩
         r[24] = scoreTime(timeToSec(f.f_800m), FEMALE_800M); r[24] = r[24] !== undefined ? r[24] : ''; // Y: 800m分数
         r[25] = f.f_lj || '';             // Z: 立定跳远成绩
