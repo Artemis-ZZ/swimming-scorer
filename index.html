@@ -750,6 +750,31 @@ function toggleSkipAtt(sid) {
   loadGroupAttendance();
 }
 
+function consecutiveJianxi(s) {
+  // 统计最近连续见习次数
+  const att = (s.attendance || []).filter(a => a.type === '见习');
+  if (att.length === 0) return 0;
+  att.sort((a, b) => new Date(b.date) - new Date(a.date)); // 按日期倒序
+  let count = 0;
+  const today = new Date($('attGroupDate').value + 'T00:00:00');
+  let expected = new Date(today);
+  for (const a of att) {
+    const ad = new Date(a.date + 'T00:00:00');
+    if (count === 0) {
+      count = 1;
+      expected = new Date(ad);
+      expected.setDate(expected.getDate() - 7); // 期望上一周
+    } else if (Math.abs(ad - expected) < 3 * 24 * 60 * 60 * 1000) {
+      count++;
+      expected = new Date(ad);
+      expected.setDate(expected.getDate() - 7);
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
 function calcAttendance(s) {
   // 免考勤直接满分
   if (s.skipAtt === true) return { score: 10, kuang: 0, bing: 0, shi: 0, gong: 0, jianxi: 0, nonOfficial: 0, disqualified: false };
@@ -817,8 +842,13 @@ function loadGroupAttendance() {
     const skip = s.skipAtt === true;
     const att = (s.attendance || []).filter(a => a.date === date);
     // 没点过任何按钮 → 空白；点过出勤 → ✓；点过缺勤 → ○等
-    const symbol = att.length > 0 ? (ATT_SYMBOL[att[0].type] || '') : '';
-    const color = symbol === '✓' ? 'var(--success)' : symbol ? 'var(--danger)' : '';
+    let symbol = att.length > 0 ? (ATT_SYMBOL[att[0].type] || '') : '';
+    // 连续见习检测
+    if (att.length > 0 && att[0].type === '见习') {
+      const consCount = consecutiveJianxi(s);
+      if (consCount >= 2) symbol = '△(' + consCount + ')';
+    }
+    const color = symbol === '✓' || symbol.startsWith('△(') ? '' : symbol ? 'var(--danger)' : '';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
