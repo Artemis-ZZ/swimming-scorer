@@ -1358,11 +1358,15 @@ function showStudentDetail() {
   if (s.attendance && s.attendance.length > 0) {
     const sorted = [...s.attendance].sort((a,b) => new Date(a.date) - new Date(b.date));
     html += '<tr><td colspan="6" style="font-size:12px">';
+    let hasItems = false;
     for (const a of sorted) {
-      const sym = { '出勤':'✓','旷课':'○','病假':'◎','事假':'⊕','公假':'√','见习':'△' }[a.type] || a.type;
+      if (a.type === '出勤') continue;  // 不出显示出勤
+      hasItems = true;
+      const sym = { '旷课':'○','病假':'◎','事假':'⊕','公假':'√','见习':'△' }[a.type] || a.type;
       html += `<span style="margin-right:8px">${a.date} ${sym}${a.type}</span>`;
     }
     html += '</td></tr>';
+    if (!hasItems) html = html.replace('</td></tr>', '') + '<td colspan="6" style="font-size:12px;color:var(--text2)">无异常考勤</td></tr>';
   } else {
     html += '<tr><td colspan="6" style="font-size:12px;color:var(--text2)">无考勤记录</td></tr>';
   }
