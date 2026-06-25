@@ -218,7 +218,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
       </div>
     </div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
-      点按符号标记出勤状态：<span style="color:var(--success)">✓出勤</span> <b>○</b>旷课 <b>◎</b>病假 <b>⊕</b>事假 <b>√</b>公假 <b>△</b>见习
+      点按符号标记出勤状态：<b>空白=出勤</b> <b>○</b>旷课 <b>◎</b>病假 <b>⊕</b>事假 <b>√</b>公假 <b>△</b>见习
     </p>
     <div id="groupAttContent">
       <div style="color:var(--text2);padding:12px;text-align:center">请选择课程时间和日期</div>
@@ -707,13 +707,13 @@ function loadGroupAttendance() {
     <thead><tr><th>姓名</th><th>学号</th><th>状态</th><th style="min-width:200px">标记</th></tr></thead><tbody>`;
   for (const s of students) {
     const att = (s.attendance || []).filter(a => a.date === date);
-    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '✓';
-    const color = symbol === '✓' ? 'var(--success)' : 'var(--danger)';
+    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '';
+    const color = symbol ? 'var(--danger)' : '';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
-      <td style="font-size:20px;font-weight:bold;color:${color}">${symbol}</td>
+      <td style="font-size:20px;font-weight:bold;${color?'color:'+color:''}">${symbol}</td>
       <td>
-        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px;color:var(--success);border-color:var(--success)">✓出勤</button>`;
+        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px">出勤</button>`;
     for (const t of attTypes) {
       const sym = ATT_SYMBOL[t];
       html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:12px">${sym}${t}</button>`;
