@@ -358,6 +358,14 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
 <!-- ==================== 总览页 ==================== -->
 <div class="page" id="page-overview">
+  <div class="card" id="studentDetailCard">
+    <h2>🔍 查询单个学生</h2>
+    <select id="detailStudent" onchange="showStudentDetail()">
+      <option value="">-- 请选择 --</option>
+    </select>
+    <div id="studentDetailContent" style="margin-top:12px"></div>
+  </div>
+
   <div class="card">
     <h2>📊 成绩总览</h2>
     <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 导出 Excel</button>
@@ -369,13 +377,6 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
     <h2>📈 统计分析</h2>
     <div><label>按维度筛选</label><select id="statGroup" onchange="refreshStats()"><option value="all">全部</option><option value="group">按课程时间</option><option value="class">按班级</option></select></div>
     <div class="stats-grid mt" id="statsGrid"></div>
-  </div>
-  <div class="card" id="studentDetailCard">
-    <h2>🔍 查询单个学生</h2>
-    <select id="detailStudent" onchange="showStudentDetail()">
-      <option value="">-- 请选择 --</option>
-    </select>
-    <div id="studentDetailContent" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -1383,10 +1384,7 @@ function showStudentDetail() {
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>🏊 游泳</b></td></tr>`;
   html += fitnessDetailRow('25m蛙泳腿', sw.sw_25m, swim.sw25, '秒');
   html += fitnessDetailRow('50m蛙泳', sw.sw_50m, swim.sw50perf, '');
-  html += fitnessDetailRow('技术评定', sw.sw_tech, swim.swTech, '分');
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>☀️ 阳光长跑</b> — ${s.sunny!==undefined&&s.sunny!==null?s.sunny:'未录入'}/10</td></tr>`;
-
-  html += `<tr style="background:var(--bg)"><td colspan="6"><b>📊 总分：${calcTotal(s).total.toFixed(1)}/100</b> ${s.exempt?'<span class="tag tag-info">免修</span>':''}</td></tr>`;
   html += '</table>';
   container.innerHTML = html;
 }
