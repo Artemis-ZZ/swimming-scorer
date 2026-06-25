@@ -1409,7 +1409,7 @@ function secToTimeColon(s) {
   if (s === null || s === undefined) return '';
   const m = Math.floor(s / 60);
   const sec = Math.round(s % 60);
-  return m > 0 ? m + ':' + String(sec).padStart(2, '0') + '"' : String(sec) + '"';
+  return m > 0 ? m + ':' + String(sec).padStart(2, '0') : String(sec);
 }
 
 // ========== EXPORT (正式成绩册格式) ==========
