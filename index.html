@@ -808,7 +808,7 @@ function loadGroupAttendance() {
     container.innerHTML = '<div style="color:var(--text2);padding:12px;text-align:center">该课程时间暂无学生</div>';
     return;
   }
-  const ATT_SYMBOL = { '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√', '见习': '△' };
+  const ATT_SYMBOL = { '出勤': '✓', '旷课': '○', '病假': '◎', '事假': '⊕', '公假': '√', '见习': '△' };
   const attTypes = ['旷课','病假','事假','公假','见习'];
 
   let html = `<div style="overflow-x:auto"><table>
@@ -816,8 +816,9 @@ function loadGroupAttendance() {
   for (const s of students) {
     const skip = s.skipAtt === true;
     const att = (s.attendance || []).filter(a => a.date === date);
-    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '✓';
-    const color = symbol === '✓' ? 'var(--success)' : 'var(--danger)';
+    // 没点过任何按钮 → 空白；点过出勤 → ✓；点过缺勤 → ○等
+    const symbol = att.length > 0 ? (ATT_SYMBOL[att[0].type] || '') : '';
+    const color = symbol === '✓' ? 'var(--success)' : symbol ? 'var(--danger)' : '';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
@@ -840,10 +841,8 @@ function markGroupAtt(sid, date, type) {
   s.attendance = s.attendance || [];
   // Remove any existing attendance for this date
   s.attendance = s.attendance.filter(a => a.date !== date);
-  // If type is empty, that means "出勤" - just clear (no record = present)
-  if (type) {
-    s.attendance.push({ type, date, note: '' });
-  }
+  // 保存记录（出勤也保存，不点出勤则为空白）
+  s.attendance.push({ type: type || '出勤', date, note: '' });
   saveDB();
   loadGroupAttendance();
 }
