@@ -380,8 +380,9 @@ function timeToSec(t) {
   if (typeof t === 'number') return t;
   if (!t || t === '') return null;
   t = String(t).trim();
-  const m = t.match(/^(\d+)[\'′](\d+)[\"″]?$/);
-  if (m) return parseInt(m[1]) * 60 + parseInt(m[2]);
+  // Support '分'秒" 格式如 1'30"、1′30″，以及 1:30、纯秒数
+  const m = t.match(/^(\d+)[\'′:](\d+(?:\.\d+)?)[\"″]?$/);
+  if (m) return parseInt(m[1]) * 60 + parseFloat(m[2]);
   const s = parseFloat(t);
   return isNaN(s) ? null : s;
 }
@@ -1013,11 +1014,10 @@ function loadGroupSwim() {
     return;
   }
   const tips = { sw_25m: '秒，如 28', sw_50m: "分'秒\" 如 1'30", sw_tech: '0-10', sw_sunny: '0-10' };
-  const unit = { sw_25m: '秒', sw_50m: '成绩', sw_tech: '得分', sw_sunny: '得分' };
-  const isScore = item === 'sw_tech' || item === 'sw_sunny';
+  const colLabel = { sw_25m: '分数/10', sw_50m: '分数/30', sw_tech: '分数/10', sw_sunny: '分数/10' };
 
   let html = `<div style="overflow-x:auto"><table>
-    <thead><tr><th>姓名</th><th>学号</th><th>${unit[item]||''}</th><th style="min-width:120px">成绩</th></tr></thead><tbody>`;
+    <thead><tr><th>姓名</th><th>学号</th><th>${colLabel[item]||'分数'}</th><th style="min-width:120px">成绩（原始）</th></tr></thead><tbody>`;
   for (const s of students) {
     s.swim = s.swim || {};
     let curVal;
