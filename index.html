@@ -816,8 +816,8 @@ function loadGroupAttendance() {
   for (const s of students) {
     const skip = s.skipAtt === true;
     const att = (s.attendance || []).filter(a => a.date === date);
-    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '';
-    const color = symbol ? 'var(--danger)' : '';
+    const symbol = att.length > 0 ? ATT_SYMBOL[att[0].type] || '○' : '✓';
+    const color = symbol === '✓' ? 'var(--success)' : 'var(--danger)';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${skip?'tag-info':'tag-warn'}" onclick="toggleSkipAtt('${s.id}')" style="cursor:pointer;font-size:11px">${skip?'免考勤':'上课'}</span></td>
