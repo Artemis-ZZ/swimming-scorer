@@ -1048,6 +1048,12 @@ function loadGroupSwim() {
     const s25 = v25 ? scoreTime(timeToSec(v25), tbl25) + '分' : '';
     const s50raw = v50 ? scoreTime(timeToSec(v50), tbl50) : 0;
     const s50 = s50raw > 0 ? s50raw + '分' : '';
+    // 技术评定：根据50m分数自动计算，但允许手动覆盖
+    let autoTech = 0;
+    if (s50raw > 0 && s50raw <= 18) autoTech = 6;
+    else if (s50raw >= 19 && s50raw <= 25) autoTech = 8;
+    else if (s50raw >= 26) autoTech = 10;
+    const displayTech = vTech !== '' ? parseInt(vTech) : (s50raw > 0 ? autoTech : '');
 
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
@@ -1057,11 +1063,11 @@ function loadGroupSwim() {
       <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="如 1'30"
         onchange="saveGroupSwimField('${s.id}','sw_50m')" style="width:70px;padding:4px 6px;font-size:13px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s50}</td>
-      <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:55px;padding:4px;font-size:13px">
-        <option value="" ${!vTech?'selected':''}>-</option>
-        ${[0,2,4,6,8,10].map(v => `<option value="${v}" ${vTech==v?'selected':''}>${v}</option>`).join('')}
+      <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:60px;padding:4px;font-size:13px">
+        <option value="" ${displayTech===''?'selected':''}>-</option>
+        ${Array.from({length:11},(_,i)=>`<option value="${i}" ${displayTech==i?'selected':''}>${i}</option>`).join('')}
       </select>
-      <div style="font-size:9px;color:var(--text2);line-height:1.2;margin-top:2px">标准:翻脚/分手抬头<br>1:1:1配合/漂浮/手未过肩</div></td>
+      <div style="font-size:9px;color:var(--text2);line-height:1.2;margin-top:2px">自动:50m未完成→0 / 完成→6 / 19-25分→8 / 26分以上→10</div></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
@@ -1075,6 +1081,10 @@ function saveGroupSwimField(sid, field) {
   const idMap = { sw_25m: 'gsw25_', sw_50m: 'gsw50_', sw_tech: 'gswtech_' };
   const val = document.getElementById(idMap[field] + sid).value.trim();
   s.swim[field] = val;
+  // 当50m成绩变化时，重置技术评定为自动计算
+  if (field === 'sw_50m') {
+    delete s.swim.sw_tech;
+  }
   saveDB();
   loadGroupSwim();
 }
