@@ -138,10 +138,10 @@ input[type="file"] { display: none; }
       支持 .xlsx / .xls 文件，表头需包含：<b>班级、姓名、学号、性别</b>
     </p>
     <div class="form-row">
-      <div style="flex:1"><label>📂 班级分类</label>
+      <div style="flex:1"><label>📂 课程时间</label>
         <input id="importGroup" placeholder="如: 周一1-2、周三3-4（可选）">
         <span style="font-size:11px;color:var(--text2);display:block;margin-top:2px">
-          填写后所有导入学生归入该分类，导出时将按此分组生成独立Sheet
+          填写后该次导入的所有学生归入该课时，导出时将按课时生成独立Sheet
         </span>
       </div>
     </div>
@@ -171,7 +171,7 @@ input[type="file"] { display: none; }
     <h2>👥 学生列表 <span style="font-size:12px;color:var(--text2)" id="listInfo"></span></h2>
     <div style="overflow-x:auto">
       <table id="studentTable">
-        <thead><tr><th>班级分类</th><th>班级</th><th>姓名</th><th>学号</th><th>性别</th><th>操作</th></tr></thead>
+        <thead><tr><th>课程时间</th><th>班级</th><th>姓名</th><th>学号</th><th>性别</th><th>操作</th></tr></thead>
         <tbody id="studentTbody"></tbody>
       </table>
     </div>
@@ -837,7 +837,7 @@ function refreshStats() {
 
 // ========== EXPORT (正式成绩册格式) ==========
 function exportExcel() {
-  // Group by class group (优先按班级分类分组，无分类则按班级)
+  // Group by 课程时间 (优先按课时分组，无课时则按班级)
   const groups = {};
   for (const s of DB.students) {
     const key = (s.group || '').trim() || s.class || '未分组';
