@@ -367,7 +367,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
   </div>
   <div class="card" id="statsCard">
     <h2>📈 统计分析</h2>
-    <div><label>按维度筛选</label><select id="statGroup" onchange="refreshStats()"><option value="all">全部</option><option value="class">按班级</option></select></div>
+    <div><label>按维度筛选</label><select id="statGroup" onchange="refreshStats()"><option value="all">全部</option><option value="group">按课程时间</option><option value="class">按班级</option></select></div>
     <div class="stats-grid mt" id="statsGrid"></div>
   </div>
 </div>
@@ -1209,7 +1209,13 @@ function refreshStats() {
   if (students.length === 0) { $('statsGrid').innerHTML = '<div style="padding:12px;color:var(--text2)">暂无数据</div>'; return; }
 
   let groups = {};
-  if (group === 'class') {
+  if (group === 'group') {
+    for (const s of students) {
+      const c = (s.group || '').trim() || '未分组';
+      if (!groups[c]) groups[c] = [];
+      groups[c].push(s);
+    }
+  } else if (group === 'class') {
     for (const s of students) {
       const c = s.class || '未分组';
       if (!groups[c]) groups[c] = [];
