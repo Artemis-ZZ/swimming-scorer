@@ -815,17 +815,203 @@ function refreshStats() {
   $('statsGrid').innerHTML = html;
 }
 
-// ========== EXPORT ==========
+// ========== EXPORT (正式成绩册格式) ==========
 function exportExcel() {
-  const rows = [['班级','姓名','学号','性别','考勤得分','身体素质','25m蛙泳腿','50m蛙泳','阳光长跑','总分','状态']];
+  // Group by class
+  const groups = {};
   for (const s of DB.students) {
-    const t = calcTotal(s);
-    rows.push([s.class, s.name, s.sid, s.gender, t.att, t.fit.toFixed(1), t.sw25, t.sw50, t.sunny, t.total.toFixed(1), t.disqualified?'取消考试资格':'正常']);
+    const c = s.class || '未分组';
+    if (!groups[c]) groups[c] = [];
+    groups[c].push(s);
   }
-  const ws = XLSX.utils.aoa_to_sheet(rows);
+
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '成绩总览');
-  XLSX.writeFile(wb, '游泳课成绩.xlsx');
+
+  for (const [className, students] of Object.entries(groups)) {
+    // Build rows matching the official template format
+    // Row 1: title (中国传媒大学体育部) - merge later
+    // Row 2: 学生考勤考核成绩登记表
+    // Row 3: semester info
+    // Row 4: main headers
+    // Row 5-6: sub-headers
+    // Row 7+: data
+    // Footer: teacher info
+
+    const rows = [];
+
+    // Title section (rows 1-3)
+    const titleRow1 = new Array(40).fill('');
+    titleRow1[14] = '中 国 传 媒 大 学 体 育 部'; // col O (0-indexed: 14)
+    rows.push(titleRow1);
+
+    const titleRow2 = new Array(40).fill('');
+    titleRow2[14] = '学 生 考 勤 考 核 成 绩 登 记 表';
+    rows.push(titleRow2);
+
+    const titleRow3 = new Array(40).fill('');
+    titleRow3[14] = '2025－2026学年第 2 学期（春季学期）';
+    rows.push(titleRow3);
+
+    // Column headers - row 4 (main)
+    const h1 = new Array(40).fill('');
+    h1[0] = '序号'; h1[1] = '学 号'; h1[2] = '姓 名'; h1[3] = '班级';
+    h1[4] = '课堂表现  10分'; // E-U
+    h1[21] = '身体素质30分'; // V-AD
+    h1[30] = '   专项 40分   +  技评10分'; // AE-AJ
+    h1[36] = '阳光长跑\n10分'; // AK
+    h1[37] = '总\n评'; // AL
+    h1[38] = '备\n注'; // AM
+    rows.push(h1);
+
+    // Column headers - row 5 (weeks & sub-headers)
+    const h2 = new Array(40).fill('');
+    const weeks = ['第1周','第2周','第3周','第4周','第5周','第6周','第7周','第8周',
+                  '第9周','第10周','第11周','第12周','第13周','第14周','第15周','第16周'];
+    for (let w = 0; w < 16; w++) h2[4 + w] = weeks[w];
+    h2[20] = '表现总分'; // U
+    h2[21] = '50m'; h2[23] = '800m 女\n1000m 男'; h2[25] = '立定跳远';
+    h2[27] = '仰卧起坐 女\n引体向上 男'; h2[29] = '素\n质\n总\n分';
+    h2[30] = '25米蛙泳腿\n10分'; h2[32] = '50米蛙泳\n30分';
+    h2[34] = '技术评定\n10分'; h2[35] = '专    项\n总\n分';
+    rows.push(h2);
+
+    // Column headers - row 6 (score sub-headers)
+    const h3 = new Array(40).fill('');
+    h3[21] = '成绩'; h3[22] = '分数'; // V-W (50m)
+    h3[23] = '成绩'; h3[24] = '分数'; // X-Y (800/1000)
+    h3[25] = '成绩'; h3[26] = '分数'; // Z-AA (立定跳远)
+    h3[27] = '成绩'; h3[28] = '分数'; // AB-AC (仰卧起坐/引体向上)
+    h3[30] = '成\n绩'; h3[31] = '得\n分'; // AE-AF (25m)
+    h3[32] = '成\n绩'; h3[33] = '得\n分'; // AG-AH (50m)
+    rows.push(h3);
+
+    // Data rows
+    let seq = 0;
+    for (const s of students) {
+      seq++;
+      const f = s.fitness || {};
+      const sw = s.swim || {};
+      const t = calcTotal(s);
+      const att = calcAttendance(s);
+
+      const r = new Array(40).fill('');
+      r[0] = seq;                         // A: 序号
+      r[1] = s.sid;                       // B: 学号
+      r[2] = s.name;                      // C: 姓名
+      r[3] = s.class;                     // D: 班级
+      r[20] = att.score;                  // U: 表现总分
+      if (s.gender === '女') {
+        r[21] = f.f_50m || '';            // V: 50m成绩
+        r[22] = scoreTime(parseFloat(f.f_50m), FEMALE_50M) || ''; // W: 50m分数
+        r[23] = f.f_800m ? secToTime(timeToSec(f.f_800m)) : '';   // X: 800m成绩
+        r[24] = scoreTime(timeToSec(f.f_800m), FEMALE_800M) || ''; // Y: 800m分数
+        r[25] = f.f_lj || '';             // Z: 立定跳远成绩
+        r[26] = scoreCount(parseFloat(f.f_lj), FEMALE_LJ) || '';   // AA: 立定跳远分数
+        r[27] = f.f_situp || '';          // AB: 仰卧起坐
+        r[28] = scoreCount(parseFloat(f.f_situp), FEMALE_SITUPS) || ''; // AC: 仰卧起坐分数
+      } else {
+        r[21] = f.f_50m || '';            // V: 50m成绩
+        r[22] = scoreTime(parseFloat(f.f_50m), MALE_50M) || ''; // W: 50m分数
+        r[23] = f.f_1000m ? secToTime(timeToSec(f.f_1000m)) : ''; // X: 1000m成绩
+        r[24] = scoreTime(timeToSec(f.f_1000m), MALE_1000M) || ''; // Y: 1000m分数
+        r[25] = f.f_lj || '';             // Z: 立定跳远成绩
+        r[26] = scoreCount(parseFloat(f.f_lj), MALE_LJ) || '';   // AA: 立定跳远分数
+        r[27] = f.f_pullup || '';         // AB: 引体向上
+        r[28] = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS) || ''; // AC: 引体向上分数
+      }
+      r[29] = t.fit.toFixed(1);           // AD: 素质总分
+      r[30] = sw.sw_25m ? sw.sw_25m + '"' : '';  // AE: 25m成绩
+      const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
+      r[31] = scoreTime(parseFloat(sw.sw_25m), table25) || '';   // AF: 25m得分
+      r[32] = sw.sw_50m ? secToTime(parseFloat(sw.sw_50m)) : ''; // AG: 50m成绩
+      const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
+      const sw50raw = scoreTime(parseFloat(sw.sw_50m), table50);
+      r[33] = sw50raw > 0 ? sw50raw : '';  // AH: 50m得分(30分制，原始分18-30直接对应)
+      r[34] = sw.sw_tech || '';           // AI: 技术评定
+      const af = parseFloat(r[31]) || 0;
+      const ah = parseFloat(r[33]) || 0;
+      const ai = parseFloat(r[34]) || 0;
+      r[35] = (af + ah + ai) || '';       // AJ: 专项总分(25m+50m+技评)
+      r[36] = t.sunny || '';              // AK: 阳光长跑
+      r[37] = t.total.toFixed(1);         // AL: 总评
+      if (t.disqualified) r[38] = '取消资格';
+      if (s.attendance && s.attendance.length > 0) {
+        r[38] = (r[38] ? r[38] + '; ' : '') + `考勤${att.score}分`;
+      }
+      rows.push(r);
+    }
+
+    // Footer: empty rows then info
+    const emptyRow = new Array(40).fill('');
+    rows.push(emptyRow); rows.push(emptyRow); rows.push(emptyRow);
+
+    const footer1 = new Array(40).fill('');
+    footer1[14] = `      班  级 ：   ${className}`;
+    rows.push(footer1);
+
+    const footer2 = new Array(40).fill('');
+    footer2[14] = '        任课教师：         张嘉雯         1';
+    rows.push(footer2);
+
+    const footer3 = new Array(40).fill('');
+    footer3[14] = '        项目名称：        游  泳         1';
+    rows.push(footer3);
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set column widths
+    ws['!cols'] = [
+      {wch:5}, {wch:15}, {wch:10}, {wch:25}, // A-D
+      ...Array(16).fill({wch:4}), // E-T (weeks)
+      {wch:6},  // U: 表现总分
+      {wch:7}, {wch:5},  // V-W: 50m
+      {wch:9}, {wch:5},  // X-Y: 800/1000
+      {wch:7}, {wch:5},  // Z-AA: 立定跳远
+      {wch:7}, {wch:5},  // AB-AC: 仰卧起坐/引体向上
+      {wch:6},  // AD: 素质总分
+      {wch:7}, {wch:5},  // AE-AF: 25m
+      {wch:7}, {wch:5},  // AG-AH: 50m
+      {wch:7},  // AI: 技术评定
+      {wch:6},  // AJ: 专项总分
+      {wch:6},  // AK: 阳光长跑
+      {wch:6},  // AL: 总评
+      {wch:12}, // AM: 备注
+    ];
+
+    // Merged cells
+    ws['!merges'] = [];
+    // Title rows
+    const tgtCol = 14; // col O (0-indexed)
+    ws['!merges'].push({s:{r:0,c:tgtCol},e:{r:0,c:38}});
+    ws['!merges'].push({s:{r:1,c:tgtCol},e:{r:1,c:38}});
+    ws['!merges'].push({s:{r:2,c:tgtCol},e:{r:2,c:38}});
+    // Header row 4 merges
+    ws['!merges'].push({s:{r:3,c:0},e:{r:3,c:3}});  // A-D: 序号学号姓名班级
+    ws['!merges'].push({s:{r:3,c:4},e:{r:3,c:20}}); // E-U: 课堂表现
+    ws['!merges'].push({s:{r:3,c:21},e:{r:3,c:29}}); // V-AD: 身体素质
+    ws['!merges'].push({s:{r:3,c:30},e:{r:3,c:35}}); // AE-AJ: 专项
+    ws['!merges'].push({s:{r:3,c:36},e:{r:3,c:36}}); // AK
+    ws['!merges'].push({s:{r:3,c:37},e:{r:3,c:37}}); // AL
+    ws['!merges'].push({s:{r:3,c:38},e:{r:3,c:38}}); // AM
+    // Header row 5 merges (V-AD sub-headers)
+    ws['!merges'].push({s:{r:4,c:21},e:{r:4,c:22}}); // V-W: 50m
+    ws['!merges'].push({s:{r:4,c:23},e:{r:4,c:24}}); // X-Y: 800/1000
+    ws['!merges'].push({s:{r:4,c:25},e:{r:4,c:26}}); // Z-AA: 立定跳远
+    ws['!merges'].push({s:{r:4,c:27},e:{r:4,c:28}}); // AB-AC: 仰卧起坐/引体
+    ws['!merges'].push({s:{r:4,c:30},e:{r:4,c:31}}); // AE-AF: 25m
+    ws['!merges'].push({s:{r:4,c:32},e:{r:4,c:33}}); // AG-AH: 50m
+    // Footer merges
+    const footerRow = 7 + students.length + 3;
+    ws['!merges'].push({s:{r:footerRow,c:tgtCol},e:{r:footerRow,c:38}});
+    ws['!merges'].push({s:{r:footerRow+1,c:tgtCol},e:{r:footerRow+1,c:38}});
+    ws['!merges'].push({s:{r:footerRow+2,c:tgtCol},e:{r:footerRow+2,c:38}});
+
+    // Sheet name (truncate to 31 chars for Excel)
+    const sheetName = className.slice(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  }
+
+  XLSX.writeFile(wb, '游泳课成绩册.xlsx');
 }
 
 // ========== DATA BACKUP ==========
