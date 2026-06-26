@@ -1233,7 +1233,7 @@ function loadGroupSunny() {
     return;
   }
   let html = `<div style="overflow-x:auto"><table>
-    <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th></tr></thead><tbody>`;
+    <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th><th>备注</th></tr></thead><tbody>`;
   for (const s of students) {
     const val = s.sunny !== undefined && s.sunny !== null && s.sunny !== '' ? s.sunny : 10;
     // 默认值自动保存
@@ -1245,6 +1245,8 @@ function loadGroupSunny() {
       <td><select id="gsun_${s.id}" onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px">
         ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}</option>`).join('')}
       </select></td>
+      <td><input type="text" id="gsunNote_${s.id}" value="${esc(s.sunny_note||'')}" placeholder="如：免跑"
+        onchange="saveGroupSunny('${s.id}')" style="width:100px;padding:6px 8px;font-size:13px"></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
@@ -1256,6 +1258,7 @@ function saveGroupSunny(sid) {
   const s = getStudent(sid);
   if (!s) return;
   s.sunny = parseInt(document.getElementById('gsun_' + sid).value) || 0;
+  s.sunny_note = (document.getElementById('gsunNote_' + sid)?.value || '').trim();
   saveDB();
 }
 
