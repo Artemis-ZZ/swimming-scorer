@@ -615,7 +615,8 @@ function handleFile(e) {
       renderStudents();
       updateCount();
     } catch(err) {
-      alert('解析失败: ' + err.message);
+      console.error(err);
+      alert('解析失败: ' + err.message + '\n\n如果是XLSX未定义，请检查网络是否能访问cdn.sheetjs.com\n如果导入的是.xls老格式，请另存为.xlsx后重试');
     }
   };
   reader.readAsArrayBuffer(file);

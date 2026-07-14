@@ -1,4 +1,4 @@
-const CACHE = 'swim-v3';
+const CACHE = 'swim-v4';
 const FILES = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
