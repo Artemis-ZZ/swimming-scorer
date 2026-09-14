@@ -932,8 +932,8 @@ function loadGroupAttendance() {
     else if (symbol) clr = 'var(--danger)';
     html += `<tr>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
-      <td><span class="tag ${s.exempt?'tag-info':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:11px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
-      <td style="font-size:20px;font-weight:bold;${s.exempt?'color:#000':(skip?'color:#000':clr?'color:'+clr:'')}">${s.exempt?'✓':(skip?'✓':symbol)}</td>
+      <td><span class="tag ${s.exempt?'tag-danger':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:11px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
+      <td style="font-size:20px;font-weight:bold;${s.exempt?'':(skip?'color:#000':clr?'color:'+clr:'')}">${s.exempt?'':(skip?'✓':symbol)}</td>
       <td>
         <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px" ${s.exempt||skip?'disabled':''}>出勤</button>`;
     for (const t of attTypes) {
