@@ -409,6 +409,15 @@ function loadDB() {
   if (raw) { try { DB = JSON.parse(raw); } catch(e) { DB = { students: [] }; } }
   if (!DB.students) DB.students = [];
   if (!DB.startDate) DB.startDate = '';
+  // 补全：已有50m蛙泳成绩的学生自动标记为免考勤
+  let changed = false;
+  for (const s of DB.students) {
+    if (s.swim && s.swim.sw_50m && !s.skipAtt) {
+      s.skipAtt = true;
+      changed = true;
+    }
+  }
+  if (changed) saveDB();
 }
 loadDB();
 
