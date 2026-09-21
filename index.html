@@ -1139,12 +1139,14 @@ function loadGroupFitness() {
   const isMaleOnly = item === 'f_1000m' || item === 'f_pullup';
 
   let html = `<div style="overflow-x:auto"><table>
-    <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>成绩</th><th>得分</th></tr></thead><tbody>`;
+    <thead><tr><th style="width:40px">序号</th><th>姓名</th><th>学号</th><th>性别</th><th>成绩</th><th>得分</th></tr></thead><tbody>`;
+  let seq = 0;
   for (const s of students) {
+    seq++;
     s.fitness = s.fitness || {};
     const curVal = s.fitness[item] || '';
     if ((isFemaleOnly && s.gender !== '女') || (isMaleOnly && s.gender !== '男')) {
-      html += `<tr style="color:var(--text2)"><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td><td colspan="2">— 无需测试</td></tr>`;
+      html += `<tr style="color:var(--text2)"><td>${seq}</td><td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td><td colspan="2">— 无需测试</td></tr>`;
       continue;
     }
     let placeholder = '';
@@ -1154,6 +1156,7 @@ function loadGroupFitness() {
     else if (item === 'f_situp' || item === 'f_pullup') placeholder = '个';
 
     html += `<tr>
+      <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><input type="text" id="gf_${s.id}" value="${esc(curVal)}" placeholder="${placeholder}"
         onchange="saveGroupFitness('${s.id}','${item}')" style="width:90px;padding:6px 8px;font-size:14px"></td>
@@ -1269,12 +1272,15 @@ function loadGroupSwim() {
 
   let html = `<div style="overflow-x:auto"><table>
     <thead><tr>
+      <th rowspan="2" style="width:40px">序号</th>
       <th rowspan="2">姓名</th><th rowspan="2">备注</th><th rowspan="2">学号</th><th rowspan="2">性别</th>
       <th colspan="2">25m蛙泳腿</th><th colspan="2">50m蛙泳</th><th>技术评定</th>
     </tr><tr>
       <th>成绩（秒）</th><th>分数/10</th><th>成绩</th><th>分数/30</th><th>分数/10</th>
     </tr></thead><tbody>`;
+  let seq = 0;
   for (const s of students) {
+    seq++;
     s.swim = s.swim || {};
     const tbl25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
     const tbl50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
@@ -1292,6 +1298,7 @@ function loadGroupSwim() {
     const displayTech = vTech !== '' ? parseInt(vTech) : (s50raw > 0 ? autoTech : '');
 
     html += `<tr>
+      <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td>
       <td><input type="text" id="gswNote_${s.id}" value="${esc(s.note||'')}" placeholder="分组"
         onchange="saveSwimNote('${s.id}')" style="width:50px;padding:4px 6px;font-size:13px"></td>
@@ -1350,14 +1357,17 @@ function loadGroupSunny() {
     return;
   }
   let html = `<div style="overflow-x:auto"><table>
-    <thead><tr><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th><th>备注</th></tr></thead><tbody>`;
+    <thead><tr><th style="width:40px">序号</th><th>姓名</th><th>学号</th><th>性别</th><th>分数（0-10）</th><th>备注</th></tr></thead><tbody>`;
+  let seq = 0;
   for (const s of students) {
+    seq++;
     const val = s.sunny !== undefined && s.sunny !== null && s.sunny !== '' ? s.sunny : 10;
     // 默认值自动保存
     if (s.sunny === undefined || s.sunny === null || s.sunny === '') {
       s.sunny = 10;
     }
     html += `<tr>
+      <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><select id="gsun_${s.id}" onchange="saveGroupSunny('${s.id}')" style="width:70px;padding:6px 8px;font-size:14px">
         ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}</option>`).join('')}
