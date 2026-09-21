@@ -1098,10 +1098,17 @@ function markGroupAtt(sid, date, type) {
   const s = getStudent(sid);
   if (!s || s.skipAtt === true) return;  // 免考勤不允许标记
   s.attendance = s.attendance || [];
-  // Remove any existing attendance for this date
-  s.attendance = s.attendance.filter(a => a.date !== date);
-  // 保存记录（出勤也保存，不点出勤则为空白）
-  s.attendance.push({ type: type || '出勤', date, note: '' });
+  const targetType = type || '出勤';
+  // 检查当天是否已有相同类型的记录
+  const existing = s.attendance.find(a => a.date === date);
+  if (existing && existing.type === targetType) {
+    // 再点相同按钮 → 清除，恢复空白
+    s.attendance = s.attendance.filter(a => a.date !== date);
+  } else {
+    // 移除当天已有记录，保存新类型
+    s.attendance = s.attendance.filter(a => a.date !== date);
+    s.attendance.push({ type: targetType, date, note: '' });
+  }
   saveDB();
   loadGroupAttendance();
 }
