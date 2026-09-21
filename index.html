@@ -373,8 +373,8 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
           <option value="">-- 全部 --</option>
         </select>
       </div>
-      <div style="flex:1"><label>🔍 姓名首字母 / 学号</label>
-        <input id="queryPinyin" placeholder="如: ZJW 或 20241309" oninput="filterQueryStudents()" style="font-size:14px">
+      <div style="flex:1"><label>🔍 姓名 / 学号搜索</label>
+        <input id="queryPinyin" placeholder="如: 张 / Z / 20241309" oninput="filterQueryStudents()" style="font-size:14px">
       </div>
     </div>
     <div class="form-row">
@@ -1547,11 +1547,12 @@ function filterQueryStudents() {
   var pinyin = ($('queryPinyin').value || '').trim().toUpperCase();
   var sel = $('detailStudent');
   var list = group ? DB.students.filter(function(s) { return (s.group || '').trim() === group; }) : DB.students;
-  // 拼音首字母 / 学号筛选
+  // 姓名/学号模糊筛选
   if (pinyin) {
     list = list.filter(function(s) {
-      if (getPinyinInitials(s.name).indexOf(pinyin) === 0) return true;
-      if (s.sid.indexOf(pinyin) >= 0) return true;
+      if (s.name.indexOf(pinyin) >= 0) return true;          // 直接匹配姓名(姓氏/名字)
+      if (getPinyinInitials(s.name).indexOf(pinyin) === 0) return true; // 拼音首字母
+      if (s.sid.indexOf(pinyin) >= 0) return true;           // 学号几位数
       return false;
     });
   }
