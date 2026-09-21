@@ -1760,6 +1760,10 @@ function exportExcel() {
         r[28] = scoreCount(parseFloat(f.f_pullup), MALE_PULLUPS); r[28] = r[28] !== undefined ? r[28] : ''; // AC: 引体向上分数
       }
       r[29] = t.fit.toFixed(1);           // AD: 素质总分
+      // 免修学生：身体素质只导出成绩，不导出分数
+      if (s.exempt) {
+        r[22] = ''; r[24] = ''; r[26] = ''; r[28] = ''; r[29] = '';
+      }
       r[30] = sw.sw_25m ? secToTime(timeToSec(sw.sw_25m)) : ''; // AE: 25m成绩
       const table25 = s.gender === '女' ? SWIM_25M_F : SWIM_25M;
       r[31] = scoreTime(timeToSec(sw.sw_25m), table25); r[31] = r[31] !== undefined ? r[31] : ''; // AF: 25m得分
