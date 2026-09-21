@@ -1075,11 +1075,10 @@ function loadGroupAttendance() {
         let weekLabel = '';
         if (semStart) {
           const diff = Math.floor((new Date(a.date + 'T00:00:00') - semStart) / (7*24*60*60*1000)) + 1;
-          weekLabel = diff >= 1 && diff <= 16 ? '第' + diff + '周' : a.date;
-        } else {
-          weekLabel = a.date;
+          weekLabel = diff >= 1 && diff <= 16 ? '第' + diff + '周' : '';
         }
-        return weekLabel + '·' + a.type;
+        const dateLabel = a.date.slice(5).replace('-', '/');
+        return (weekLabel ? weekLabel + ' ' : '') + dateLabel + '·' + a.type;
       }).join('　');
       attSummary.push({ name: s.name, sid: s.sid, items });
     }
