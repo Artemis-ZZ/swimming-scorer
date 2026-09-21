@@ -238,6 +238,16 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
   <div class="card" id="attStudentSelector">
     <h2>🔍 查看单个学生考勤详情</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="attStudentGroup" onchange="filterAttStudents()">
+          <option value="">-- 全部 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>🔍 姓名/学号</label>
+        <input id="attSearch" placeholder="如: 张 / Z / 2024" oninput="filterAttStudents()">
+      </div>
+    </div>
     <select id="attStudent" onchange="loadAttendance()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -295,6 +305,16 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
   <div class="card">
     <h2>🔍 查看单个学生身体素质</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="fitStudentGroup" onchange="filterFitStudents()">
+          <option value="">-- 全部 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>🔍 姓名/学号</label>
+        <input id="fitSearch" placeholder="如: 张 / Z / 2024" oninput="filterFitStudents()">
+      </div>
+    </div>
     <select id="fitStudent" onchange="loadFitness()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -330,6 +350,16 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
   <div class="card">
     <h2>🔍 查看单个学生游泳成绩</h2>
+    <div class="form-row">
+      <div style="flex:1"><label>课程时间</label>
+        <select id="swimStudentGroup" onchange="filterSwimStudents()">
+          <option value="">-- 全部 --</option>
+        </select>
+      </div>
+      <div style="flex:1"><label>🔍 姓名/学号</label>
+        <input id="swimSearch" placeholder="如: 张 / Z / 2024" oninput="filterSwimStudents()">
+      </div>
+    </div>
     <select id="swimStudent" onchange="loadSwim()">
       <option value="">-- 请选择 --</option>
     </select>
@@ -552,15 +582,18 @@ document.getElementById('nav').addEventListener('click', function(e) {
   if (page === 'attendance') {
     populateStudentSelect('attStudent');
     populateGroupSelect('attGroup');
+    populateGroupSelect('attStudentGroup');
     $('attGroupDate').value = new Date().toISOString().split('T')[0];
   }
   if (page === 'fitness') {
     populateStudentSelect('fitStudent');
     populateGroupSelect('fitGroup');
+    populateGroupSelect('fitStudentGroup');
   }
   if (page === 'swim') {
     populateStudentSelect('swimStudent');
     populateGroupSelect('swimGroup');
+    populateGroupSelect('swimStudentGroup');
   }
   if (page === 'sunny') {
     populateGroupSelect('sunnyGroup');
@@ -1543,23 +1576,31 @@ function getPinyinInitials(name) {
 }
 
 function filterQueryStudents() {
-  var group = $('queryGroup').value;
-  var pinyin = ($('queryPinyin').value || '').trim().toUpperCase();
-  var sel = $('detailStudent');
+  filterStudentPicker('queryGroup', 'queryPinyin', 'detailStudent');
+  $('studentDetailContent').innerHTML = '';
+}
+
+// 通用：课程时间 + 姓名/学号 筛选学生下拉
+function filterStudentPicker(groupId, searchId, studentId) {
+  var group = $(groupId).value;
+  var search = ($(searchId).value || '').trim().toUpperCase();
+  var sel = $(studentId);
   var list = group ? DB.students.filter(function(s) { return (s.group || '').trim() === group; }) : DB.students;
-  // 姓名/学号模糊筛选
-  if (pinyin) {
+  if (search) {
     list = list.filter(function(s) {
-      if (s.name.indexOf(pinyin) >= 0) return true;          // 直接匹配姓名(姓氏/名字)
-      if (getPinyinInitials(s.name).indexOf(pinyin) === 0) return true; // 拼音首字母
-      if (s.sid.indexOf(pinyin) >= 0) return true;           // 学号几位数
+      if (s.name.indexOf(search) >= 0) return true;
+      if (getPinyinInitials(s.name).indexOf(search) === 0) return true;
+      if (s.sid.indexOf(search) >= 0) return true;
       return false;
     });
   }
   sel.innerHTML = '<option value="">-- 请选择 --</option>' +
     list.map(function(s) { return '<option value="' + s.id + '">' + esc(s.class) + ' - ' + esc(s.name) + ' (' + esc(s.sid) + ')</option>'; }).join('');
-  $('studentDetailContent').innerHTML = '';
 }
+
+function filterAttStudents() { filterStudentPicker('attStudentGroup', 'attSearch', 'attStudent'); }
+function filterFitStudents() { filterStudentPicker('fitStudentGroup', 'fitSearch', 'fitStudent'); }
+function filterSwimStudents() { filterStudentPicker('swimStudentGroup', 'swimSearch', 'swimStudent'); }
 
 function showStudentDetail() {
   const sid = $('detailStudent').value;
