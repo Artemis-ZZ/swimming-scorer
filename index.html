@@ -585,7 +585,16 @@ function handleFile(e) {
       var data = new Uint8Array(ev.target.result);
       var wb = XLSX.read(data, { type: 'array' });
       var manualGroup = $('importGroup').value.trim();
-      var totalImported = 0, sheetsOk = 0;
+      // 旧学生索引：学号|姓名 → 旧学生对象
+      var oldMap = {};
+      for (var k = 0; k < DB.students.length; k++) {
+        var os = DB.students[k];
+        oldMap[os.sid + '|' + os.name] = os;
+      }
+      // 收集新名单，按 group 分组，保持 Excel 顺序
+      var newByGroup = {};
+      var groupOrder = [];
+      var totalImported = 0, totalKept = 0, sheetsOk = 0;
       var sheetNames = wb.SheetNames;
       for (var si = 0; si < sheetNames.length; si++) {
         try {
@@ -608,7 +617,8 @@ function handleFile(e) {
           }
           if (colClass < 0 || colName < 0 || colSid < 0) continue;
           var group = manualGroup || sheetName;
-          var imported = 0;
+          if (!newByGroup[group]) { newByGroup[group] = []; groupOrder.push(group); }
+          var imported = 0, sheetKept = 0;
           for (var i = 1; i < rows.length; i++) {
             var r = rows[i];
             if (!r || !Array.isArray(r)) continue;
@@ -617,9 +627,7 @@ function handleFile(e) {
             var sidVal = r[colSid];
             if (sidVal === null || sidVal === undefined || String(sidVal).trim() === '') continue;
             var sid = String(sidVal).trim();
-            var dup = false;
-            for (var di = 0; di < DB.students.length; di++) { if (DB.students[di].sid === sid) { dup = true; break; } }
-            if (dup) continue;
+            var name = String(nameVal).trim();
             var gender = '男';
             if (colGender >= 0) {
               var gv = r[colGender];
@@ -627,29 +635,65 @@ function handleFile(e) {
                 if (String(gv).indexOf('女') >= 0) gender = '女';
               }
             }
-            DB.students.push({
-              id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
-              class: String(r[colClass] || '').trim(),
-              name: String(nameVal).trim(),
-              sid: sid,
-              gender: gender,
-              group: group,
-              exempt: false,
-              attendance: [],
-              fitness: {},
-              swim: {},
-              sunny: null
-            });
-            imported++;
+            var cls = String(r[colClass] || '').trim();
+            // 学号+姓名双匹配，保留原有成绩
+            var key = sid + '|' + name;
+            var old = oldMap[key];
+            if (old) {
+              // 保留成绩，更新班级/性别/课程时间
+              newByGroup[group].push({
+                id: old.id,
+                class: cls || old.class,
+                name: name,
+                sid: sid,
+                gender: gender,
+                group: group,
+                exempt: old.exempt,
+                skipAtt: old.skipAtt,
+                note: old.note,
+                attendance: old.attendance || [],
+                fitness: old.fitness || {},
+                swim: old.swim || {},
+                sunny: old.sunny
+              });
+              totalKept++;
+              sheetKept++;
+            } else {
+              newByGroup[group].push({
+                id: Date.now() + '_' + Math.random().toString(36).slice(2,8),
+                class: cls,
+                name: name,
+                sid: sid,
+                gender: gender,
+                group: group,
+                exempt: false,
+                attendance: [],
+                fitness: {},
+                swim: {},
+                sunny: null
+              });
+              imported++;
+            }
           }
-          if (imported > 0) sheetsOk++;
+          if (imported > 0 || sheetKept > 0) sheetsOk++;
           totalImported += imported;
         } catch(sheetErr) {
           console.error('Sheet ' + sheetName + ' error:', sheetErr);
         }
       }
+      // 方案A：替换导入的 group，其他 group 保留不动
+      for (var gi = 0; gi < groupOrder.length; gi++) {
+        var g = groupOrder[gi];
+        // 删除该 group 的所有旧学生
+        DB.students = DB.students.filter(function(s) { return (s.group || '').trim() !== g; });
+        // 追加新学生（保持 Excel 顺序）
+        var newList = newByGroup[g];
+        for (var ni = 0; ni < newList.length; ni++) {
+          DB.students.push(newList[ni]);
+        }
+      }
       saveDB();
-      $('importPreview').innerHTML = '<div class="card" style="background:#E8F8EE"><b>✅ 成功导入 ' + totalImported + ' 名学生（' + sheetsOk + '/' + sheetNames.length + ' 个Sheet有效）</b></div>';
+      $('importPreview').innerHTML = '<div class="card" style="background:#E8F8EE"><b>✅ 导入完成：新增 ' + totalImported + ' 人，保留成绩 ' + totalKept + ' 人（' + sheetsOk + '/' + sheetNames.length + ' 个Sheet）</b></div>';
       $('importPreview').classList.remove('hidden');
       renderStudents();
       updateCount();
@@ -931,8 +975,10 @@ function loadGroupAttendance() {
   const attTypes = ['旷课','病假','事假','公假','见习'];
 
   let html = `<div style="overflow-x:auto"><table>
-    <thead><tr><th>姓名</th><th>学号</th><th>出勤状态</th><th>今日</th><th style="min-width:200px">标记</th></tr></thead><tbody>`;
+    <thead><tr><th style="width:40px">序号</th><th>姓名</th><th>学号</th><th>出勤状态</th><th>今日</th><th style="min-width:200px">标记</th></tr></thead><tbody>`;
+  let seq = 0;
   for (const s of students) {
+    seq++;
     const skip = s.skipAtt === true;
     const att = (s.attendance || []).filter(a => a.date === date);
     // 没点过任何按钮 → 空白；点过出勤 → ✓；点过缺勤 → ○等
@@ -948,6 +994,7 @@ function loadGroupAttendance() {
     else if (symbol.startsWith('△')) clr = 'var(--primary)';
     else if (symbol) clr = 'var(--danger)';
     html += `<tr>
+      <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${s.exempt?'tag-danger':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:11px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
       <td style="font-size:20px;font-weight:bold;${s.exempt?'':(skip?'color:#000':clr?'color:'+clr:'')}">${s.exempt?'':(skip?'✓':symbol)}</td>
