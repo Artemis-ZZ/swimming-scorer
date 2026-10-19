@@ -28,7 +28,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg); color: var(--text);
+  background: var(--bg); color: var(--text); font-size: 16px;
   -webkit-tap-highlight-color: transparent;
   max-width: 900px; margin: 0 auto; padding-bottom: 80px;
 }
@@ -37,15 +37,15 @@ header {
   padding: 12px 16px; position: sticky; top: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
 }
-header h1 { font-size: 18px; font-weight: 600; }
-header .count { font-size: 13px; opacity: .85; }
+header h1 { font-size: 20px; font-weight: 600; }
+header .count { font-size: 14px; opacity: .85; }
 nav {
   display: flex; background: var(--card); border-bottom: 1px solid var(--sep);
-  position: sticky; top: 44px; z-index: 99; overflow-x: auto;
+  position: sticky; top: 46px; z-index: 99; overflow-x: auto;
 }
 nav button {
   flex: 1; min-width: fit-content; padding: 12px 10px; border: none;
-  background: none; font-size: 14px; color: var(--text2); white-space: nowrap;
+  background: none; font-size: 15px; color: var(--text2); white-space: nowrap;
   border-bottom: 2px solid transparent; cursor: pointer; transition: .15s;
 }
 nav button.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
@@ -55,37 +55,37 @@ nav button.active { color: var(--primary); border-bottom-color: var(--primary); 
   background: var(--card); border-radius: var(--radius);
   padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
 }
-.card h2 { font-size: 16px; margin-bottom: 12px; }
-.card h3 { font-size: 14px; margin-bottom: 8px; color: var(--text2); }
-label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+.card h2 { font-size: 18px; margin-bottom: 12px; }
+.card h3 { font-size: 15px; margin-bottom: 8px; color: var(--text2); }
+label { display: block; font-size: 14px; color: var(--text2); margin-bottom: 4px; }
 input:not([type="checkbox"]):not([type="file"]), select, textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--sep);
-  border-radius: 8px; font-size: 15px; font-family: inherit;
+  width: 100%; padding: 11px 12px; border: 1px solid var(--sep);
+  border-radius: 8px; font-size: 16px; font-family: inherit;
   background: var(--bg); -webkit-appearance: none;
 }
 input:focus, select:focus { outline: none; border-color: var(--primary); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 10px 20px; border-radius: 8px; font-size: 15px; font-weight: 600;
+  padding: 11px 20px; border-radius: 8px; font-size: 16px; font-weight: 600;
   border: none; cursor: pointer; transition: .15s;
 }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-outline { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
-.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-sm { padding: 7px 12px; font-size: 14px; }
 .btn-block { width: 100%; margin-top: 8px; }
 .btn:active { opacity: .7; }
 .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
 .form-row > * { flex: 1; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
 th, td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--sep); }
-th { font-weight: 600; color: var(--text2); font-size: 12px; white-space: nowrap; }
+th { font-weight: 600; color: var(--text2); font-size: 14px; white-space: nowrap; }
 tr.disqualified { background: #FFF3F3; color: var(--danger); }
 .score-good { color: var(--success); font-weight: 600; }
 .score-bad { color: var(--danger); font-weight: 600; }
 .tag {
-  display: inline-block; padding: 2px 6px; border-radius: 4px;
-  font-size: 11px; font-weight: 600;
+  display: inline-block; padding: 3px 7px; border-radius: 4px;
+  font-size: 12px; font-weight: 600;
 }
 .tag-warn { background: #FFF3CD; color: #856404; }
 .tag-danger { background: #FFE5E5; color: #C00; }
@@ -105,16 +105,16 @@ tr.disqualified { background: #FFF3F3; color: var(--danger); }
   background: var(--card); border-radius: var(--radius); padding: 12px;
   text-align: center; box-shadow: var(--shadow);
 }
-.stat-card .num { font-size: 28px; font-weight: 700; color: var(--primary); }
-.stat-card .label { font-size: 12px; color: var(--text2); margin-top: 4px; }
-.att-log { font-size: 13px; }
-.att-log .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--sep); }
-.att-log .row .remove-btn { color: var(--danger); cursor: pointer; font-size: 16px; }
+.stat-card .num { font-size: 30px; font-weight: 700; color: var(--primary); }
+.stat-card .label { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.att-log { font-size: 15px; }
+.att-log .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--sep); }
+.att-log .row .remove-btn { color: var(--danger); cursor: pointer; font-size: 18px; }
 input[type="file"] { display: none; }
 td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; -webkit-appearance: checkbox; appearance: checkbox; accent-color: var(--primary); }
 @media (max-width: 480px) {
   .card { padding: 12px; }
-  th, td { padding: 6px 4px; font-size: 11px; }
+  th, td { padding: 7px 4px; font-size: 14px; }
   .form-row { flex-direction: column; }
 }
 </style>
@@ -140,13 +140,13 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 <div class="page active" id="page-students">
   <div class="card">
     <h2>📥 导入学生</h2>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">
+    <p style="font-size:15px;color:var(--text2);margin-bottom:12px">
       支持 .xlsx / .xls 文件，表头需包含：<b>班级、姓名、学号、性别</b>
     </p>
     <div class="form-row">
       <div style="flex:1"><label>📂 课程时间</label>
         <input id="importGroup" placeholder="如: 周一1-2、周三3-4（可选）">
-        <span style="font-size:11px;color:var(--text2);display:block;margin-top:2px">
+        <span style="font-size:15px;color:var(--text2);display:block;margin-top:2px">
           填写后该次导入的所有学生归入该课时，导出时将按课时生成独立Sheet
         </span>
       </div>
@@ -170,11 +170,11 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
       <div><label>性别</label><select id="mGender"><option value="男">男</option><option value="女">女</option></select></div>
     </div>
     <button class="btn btn-primary btn-block" onclick="addStudent()">➕ 添加</button>
-    <p id="addMsg" style="font-size:12px;color:var(--danger);margin-top:4px"></p>
+    <p id="addMsg" style="font-size:14px;color:var(--danger);margin-top:4px"></p>
   </div>
 
   <div class="card" id="studentListCard">
-    <h2>👥 学生列表 <span style="font-size:12px;color:var(--text2)" id="listInfo"></span></h2>
+    <h2>👥 学生列表 <span style="font-size:14px;color:var(--text2)" id="listInfo"></span></h2>
     <div style="margin-bottom:8px">
       <label>课程时间筛选</label>
       <select id="studentGroupFilter" onchange="renderStudents()" style="width:auto;min-width:140px;padding:6px 10px">
@@ -195,14 +195,14 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
 
   <div class="card">
     <h2>💾 数据备份 & 迁移</h2>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:8px">
+    <p style="font-size:15px;color:var(--text2);margin-bottom:8px">
       导出备份：将在手机上的数据保存成文件 → 发送到电脑<br>
       导入恢复：打开电脑上的备份文件 → 数据同步到手机
     </p>
     <div class="form-row">
       <div style="flex:1"><label>📅 学期开始日期</label>
         <input type="date" id="semesterStart" onchange="saveSemesterStart()">
-        <span style="font-size:11px;color:var(--text2);display:block;margin-top:2px">考勤记录将自动填入对应周次的出勤格内 ○旷课 ◎病假 ⊕事假 √公假 △见习</span>
+        <span style="font-size:15px;color:var(--text2);display:block;margin-top:2px">考勤记录将自动填入对应周次的出勤格内 ○旷课 ◎病假 ⊕事假 √公假 △见习</span>
       </div>
     </div>
     <div class="form-row">
@@ -210,7 +210,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
       <button class="btn btn-outline btn-block" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button>
     </div>
     <input type="file" id="importFileInput" onchange="importData(event)" style="display:none">
-    <p id="importMsg" style="font-size:12px;color:var(--text2);margin-top:4px"></p>
+    <p id="importMsg" style="font-size:14px;color:var(--text2);margin-top:4px"></p>
   </div>
 </div>
 
@@ -228,7 +228,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         <input type="date" id="attGroupDate" onchange="loadGroupAttendance()">
       </div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:8px">
       点按符号标记出勤状态：<b>空白=出勤</b> <b>○</b>旷课 <b>◎</b>病假 <b>⊕</b>事假 <b>√</b>公假 <b>△</b>见习
     </p>
     <div id="groupAttContent">
@@ -295,7 +295,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         </select>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:8px">
       输入原始成绩后自动算分，按回车或焦点移出自动保存
     </p>
     <div id="groupFitContent">
@@ -322,7 +322,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
   <div id="fitContent" class="hidden">
     <div class="card">
       <h2 id="fitTitle"></h2>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">输入原始成绩，系统自动对照评分表算出分数</p>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:8px">输入原始成绩，系统自动对照评分表算出分数</p>
       <div id="fitInputs"></div>
       <button class="btn btn-primary btn-block" onclick="saveFitness()">💾 保存</button>
     </div>
@@ -340,7 +340,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         </select>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:8px">
       输入成绩后自动算出分数，按回车或焦点移出自动保存
     </p>
     <div id="groupSwimContent">
@@ -384,7 +384,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         </select>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:8px">
       直接填写 0-10 分，按回车或焦点移出自动保存
     </p>
     <div id="groupSunnyContent">
@@ -1004,7 +1004,7 @@ function renderAttLog(s) {
   const sorted = [...att].sort((a,b) => new Date(a.date) - new Date(b.date));
   $('attLog').innerHTML = sorted.map((a,i) => {
     const week = getWeekNum(a.date);
-    const weekLabel = week ? `<span style="color:var(--text2);font-size:12px">第${week}周</span> ` : '';
+    const weekLabel = week ? `<span style="color:var(--text2);font-size:14px">第${week}周</span> ` : '';
     return `
     <div class="row">
       <span>${weekLabel}<span class="tag ${a.type==='旷课'?'tag-danger':a.type==='见习'?'tag-info':'tag-warn'}">${a.type}</span> ${a.date} ${a.note?esc(a.note):''}</span>
@@ -1052,13 +1052,13 @@ function loadGroupAttendance() {
     html += `<tr>
       <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td><td>${esc(s.sid)}</td>
-      <td><span class="tag ${s.exempt?'tag-danger':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:11px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
+      <td><span class="tag ${s.exempt?'tag-danger':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:15px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
       <td style="font-size:20px;font-weight:bold;${s.exempt?'':(skip?'color:#000':clr?'color:'+clr:'')}">${s.exempt?'':(skip?'✓':symbol)}</td>
       <td>
-        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:12px" ${s.exempt||skip?'disabled':''}>出勤</button>`;
+        <button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','')" style="padding:2px 6px;margin:1px;font-size:14px" ${s.exempt||skip?'disabled':''}>出勤</button>`;
     for (const t of attTypes) {
       const sym = ATT_SYMBOL[t];
-      html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:12px" ${s.exempt||skip?'disabled':''}>${sym}${t}</button>`;
+      html += `<button class="btn btn-sm btn-outline" onclick="markGroupAtt('${s.id}','${date}','${t}')" style="padding:2px 6px;margin:1px;font-size:14px" ${s.exempt||skip?'disabled':''}>${sym}${t}</button>`;
     }
     html += `</td></tr>`;
   }
@@ -1087,7 +1087,7 @@ function loadGroupAttendance() {
     html += `<div class="card" style="margin-top:12px"><h3>📋 考勤统计</h3>
       <table><thead><tr><th>姓名</th><th>学号</th><th>考勤记录（周次·类型）</th></tr></thead><tbody>`;
     for (const j of attSummary) {
-      html += `<tr><td>${esc(j.name)}</td><td>${esc(j.sid)}</td><td style="font-size:13px">${esc(j.items)}</td></tr>`;
+      html += `<tr><td>${esc(j.name)}</td><td>${esc(j.sid)}</td><td style="font-size:15px">${esc(j.items)}</td></tr>`;
     }
     html += '</tbody></table></div>';
   }
@@ -1141,7 +1141,7 @@ function fieldRow(label, key, val, placeholder) {
   return `<div class="form-row" style="margin-bottom:8px">
     <div style="flex:0 0 100px"><label>${label}</label></div>
     <div><input id="${key}" value="${val||''}" placeholder="${placeholder||''}"></div>
-    <div style="flex:0 0 80px"><span style="font-size:13px;color:var(--text2)" id="${key}_score"></span></div>
+    <div style="flex:0 0 80px"><span style="font-size:15px;color:var(--text2)" id="${key}_score"></span></div>
   </div>`;
 }
 
@@ -1270,10 +1270,10 @@ function loadSwim() {
   const html = `
     <div class="form-row"><div style="flex:0 0 120px"><label>25m蛙泳腿</label></div>
       <div><input id="sw_25m" value="${sw.sw_25m||''}" placeholder="秒或分:秒"></div>
-      <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_25m_score"></span></div></div>
+      <div style="flex:0 0 60px"><span style="font-size:15px;color:var(--text2)" id="sw_25m_score"></span></div></div>
     <div class="form-row"><div style="flex:0 0 120px"><label>50m蛙泳</label></div>
       <div><input id="sw_50m" value="${sw.sw_50m||''}" placeholder="分:秒"></div>
-      <div style="flex:0 0 60px"><span style="font-size:13px;color:var(--text2)" id="sw_50m_score"></span></div></div>
+      <div style="flex:0 0 60px"><span style="font-size:15px;color:var(--text2)" id="sw_50m_score"></span></div></div>
     <div class="form-row"><div style="flex:0 0 120px"><label>技术评定</label></div>
       <div><input id="sw_tech" value="${sw.sw_tech||''}" placeholder="0-10分，手动打分"></div></div>
     <div class="form-row"><div style="flex:0 0 120px"><label>阳光长跑</label></div>
@@ -1370,15 +1370,15 @@ function loadGroupSwim() {
       <td style="color:var(--text2)">${seq}</td>
       <td>${esc(s.name)}</td>
       <td><input type="text" id="gswNote_${s.id}" value="${esc(s.note||'')}" placeholder="分组"
-        onchange="saveSwimNote('${s.id}')" style="width:50px;padding:4px 6px;font-size:13px"></td>
+        onchange="saveSwimNote('${s.id}')" style="width:50px;padding:4px 6px;font-size:15px"></td>
       <td>${esc(s.sid)}</td><td>${s.gender}</td>
       <td><input type="text" id="gsw25_${s.id}" value="${esc(v25)}" placeholder="秒或分:秒"
-        onchange="saveGroupSwimField('${s.id}','sw_25m')" style="width:60px;padding:4px 6px;font-size:13px"></td>
+        onchange="saveGroupSwimField('${s.id}','sw_25m')" style="width:60px;padding:4px 6px;font-size:15px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s25}</td>
       <td><input type="text" id="gsw50_${s.id}" value="${esc(v50)}" placeholder="分:秒"
-        onchange="saveGroupSwimField('${s.id}','sw_50m')" style="width:70px;padding:4px 6px;font-size:13px"></td>
+        onchange="saveGroupSwimField('${s.id}','sw_50m')" style="width:70px;padding:4px 6px;font-size:15px"></td>
       <td style="font-weight:bold;color:var(--primary)">${s50}</td>
-      <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:60px;padding:4px;font-size:13px">
+      <td><select id="gswtech_${s.id}" onchange="saveGroupSwimField('${s.id}','sw_tech')" style="width:60px;padding:4px;font-size:15px">
         <option value="" ${displayTech===''?'selected':''}>-</option>
         ${Array.from({length:11},(_,i)=>`<option value="${i}" ${displayTech==i?'selected':''}>${i}</option>`).join('')}
       </select></td>
@@ -1442,7 +1442,7 @@ function loadGroupSunny() {
         ${Array.from({length:11},(_,i)=>`<option value="${i}" ${val==i?'selected':''}>${i}</option>`).join('')}
       </select></td>
       <td><input type="text" id="gsunNote_${s.id}" value="${esc(s.sunny_note||'')}" placeholder="如：免跑"
-        onchange="saveGroupSunny('${s.id}')" style="width:100px;padding:6px 8px;font-size:13px"></td>
+        onchange="saveGroupSunny('${s.id}')" style="width:100px;padding:6px 8px;font-size:15px"></td>
     </tr>`;
   }
   html += '</tbody></table></div>';
@@ -1661,14 +1661,14 @@ function showStudentDetail() {
   const fit = calcFitness(s);
   const swim = calcSwim(s);
 
-  let html = `<table style="font-size:13px">
+  let html = `<table style="font-size:15px">
     <tr><td style="width:100px;color:var(--text2)">姓名</td><td><b>${esc(s.name)}</b></td><td style="width:80px;color:var(--text2)">学号</td><td>${esc(s.sid)}</td><td style="width:80px;color:var(--text2)">性别</td><td>${s.gender}</td></tr>
     <tr><td style="color:var(--text2)">课程时间</td><td>${esc(s.group||'')}</td><td style="color:var(--text2)">班级</td><td colspan="3">${esc(s.class)}</td></tr>
     <tr style="background:var(--bg)"><td colspan="6"><b>📅 考勤</b> — 得分：${att.score}/10 ${att.disqualified?'<span class="tag tag-danger">取消资格</span>':''}</td></tr>`;
   
   if (s.attendance && s.attendance.length > 0) {
     const sorted = [...s.attendance].sort((a,b) => new Date(a.date) - new Date(b.date));
-    html += '<tr><td colspan="6" style="font-size:12px">';
+    html += '<tr><td colspan="6" style="font-size:14px">';
     let hasItems = false;
     for (const a of sorted) {
       if (a.type === '出勤' || a.type === '见习') continue;  // 不显示出勤和见习
@@ -1677,9 +1677,9 @@ function showStudentDetail() {
       html += `<span style="margin-right:8px">${a.date} ${sym}${a.type}</span>`;
     }
     html += '</td></tr>';
-    if (!hasItems) html = html.replace('</td></tr>', '') + '<td colspan="6" style="font-size:12px;color:var(--success)">全勤</td></tr>';
+    if (!hasItems) html = html.replace('</td></tr>', '') + '<td colspan="6" style="font-size:14px;color:var(--success)">全勤</td></tr>';
   } else {
-    html += '<tr><td colspan="6" style="font-size:12px;color:var(--text2)">无考勤记录</td></tr>';
+    html += '<tr><td colspan="6" style="font-size:14px;color:var(--text2)">无考勤记录</td></tr>';
   }
 
   html += `<tr style="background:var(--bg)"><td colspan="6"><b>💪 身体素质</b> — 总分：${fit.total.toFixed(1)}/30</td></tr>`;
