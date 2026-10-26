@@ -454,15 +454,6 @@ function loadDB() {
   if (raw) { try { DB = JSON.parse(raw); } catch(e) { DB = { students: [] }; } }
   if (!DB.students) DB.students = [];
   if (!DB.startDate) DB.startDate = '';
-  // 补全：已有50m蛙泳成绩的学生自动标记为免考勤
-  let changed = false;
-  for (const s of DB.students) {
-    if (s.swim && s.swim.sw_50m && !s.skipAtt) {
-      s.skipAtt = true;
-      changed = true;
-    }
-  }
-  if (changed) saveDB();
 }
 loadDB();
 
@@ -1289,8 +1280,6 @@ function saveSwim() {
   s.swim = s.swim || {};
   s.swim.sw_25m = $('sw_25m').value.trim();
   s.swim.sw_50m = $('sw_50m').value.trim();
-  // 有50m成绩 → 自动设为免考勤
-  if (s.swim.sw_50m) s.skipAtt = true;
   s.swim.sw_tech = parseFloat($('sw_tech').value) || 0;
   s.sunny = parseFloat($('sw_sunny').value) || 0;
   saveDB();
@@ -1398,8 +1387,6 @@ function saveGroupSwimField(sid, field) {
   // 当50m成绩变化时，自动重新计算并保存技术评定
   if (field === 'sw_50m') {
     delete s.swim.sw_tech;
-    // 有50m成绩 → 自动设为免考勤
-    if (val) s.skipAtt = true;
     const table50 = s.gender === '女' ? SWIM_50M_F : SWIM_50M;
     const s50raw = val ? scoreTime(timeToSec(val), table50) : 0;
     let autoTech = 0;
