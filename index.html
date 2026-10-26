@@ -151,10 +151,10 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         </span>
       </div>
     </div>
-    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+    <label class="upload-area" for="fileInput" style="display:block;cursor:pointer">
       <div class="icon">📂</div>
       <div>点击上传 Excel 文件</div>
-    </div>
+    </label>
     <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
     <div id="importPreview" class="mt hidden"></div>
   </div>
@@ -207,7 +207,7 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
     </div>
     <div class="form-row">
       <button class="btn btn-primary btn-block" onclick="exportData()">📤 导出数据</button>
-      <button class="btn btn-outline btn-block" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button>
+      <label class="btn btn-outline btn-block" for="importFileInput" style="cursor:pointer">📥 导入数据</label>
     </div>
     <input type="file" id="importFileInput" onchange="importData(event)" style="display:none">
     <p id="importMsg" style="font-size:14px;color:var(--text2);margin-top:4px"></p>
