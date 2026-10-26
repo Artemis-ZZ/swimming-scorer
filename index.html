@@ -110,7 +110,10 @@ tr.disqualified { background: #FFF3F3; color: var(--danger); }
 .att-log { font-size: 15px; }
 .att-log .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--sep); }
 .att-log .row .remove-btn { color: var(--danger); cursor: pointer; font-size: 18px; }
-input[type="file"] { display: none; }
+input[type="file"] {
+  position: absolute; width: 1px; height: 1px;
+  opacity: 0; overflow: hidden; clip: rect(0 0 0 0);
+}
 td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; -webkit-appearance: checkbox; appearance: checkbox; accent-color: var(--primary); }
 @media (max-width: 480px) {
   .card { padding: 12px; }
@@ -151,11 +154,11 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
         </span>
       </div>
     </div>
-    <label class="upload-area" for="fileInput" style="display:block;cursor:pointer">
+    <label class="upload-area" style="display:block;cursor:pointer">
       <div class="icon">📂</div>
       <div>点击上传 Excel 文件</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
     </label>
-    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
     <div id="importPreview" class="mt hidden"></div>
   </div>
 
@@ -207,9 +210,10 @@ td input[type="checkbox"], th input[type="checkbox"] { width: 18px; height: 18px
     </div>
     <div class="form-row">
       <button class="btn btn-primary btn-block" onclick="exportData()">📤 导出数据</button>
-      <label class="btn btn-outline btn-block" for="importFileInput" style="cursor:pointer">📥 导入数据</label>
+      <label class="btn btn-outline btn-block" style="cursor:pointer">📥 导入数据
+        <input type="file" id="importFileInput" onchange="importData(event)">
+      </label>
     </div>
-    <input type="file" id="importFileInput" onchange="importData(event)" style="display:none">
     <p id="importMsg" style="font-size:14px;color:var(--text2);margin-top:4px"></p>
   </div>
 </div>
