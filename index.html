@@ -792,6 +792,10 @@ function toggleExempt(sid) {
   const s = getStudent(sid);
   if (!s) return;
   s.exempt = !s.exempt;
+  // 设为免修时，自动清除原有考勤记录
+  if (s.exempt === true) {
+    s.attendance = [];
+  }
   saveDB();
   renderStudents();
 }
@@ -950,8 +954,8 @@ function consecutiveJianxi(s) {
 }
 
 function calcAttendance(s) {
-  // 免考勤直接满分
-  if (s.skipAtt === true) return { score: 10, kuang: 0, bing: 0, shi: 0, gong: 0, jianxi: 0, nonOfficial: 0, disqualified: false };
+  // 免考勤或免修直接满分，不计取消考试资格
+  if (s.skipAtt === true || s.exempt === true) return { score: 10, kuang: 0, bing: 0, shi: 0, gong: 0, jianxi: 0, nonOfficial: 0, disqualified: false };
   const att = s.attendance || [];
   let score = 10;
   let kuang = 0, bing = 0, shi = 0, gong = 0, jianxi = 0;
