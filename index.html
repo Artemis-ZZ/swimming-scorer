@@ -1048,9 +1048,14 @@ function loadGroupAttendance() {
     if (symbol === '✓') clr = 'var(--success)';
     else if (symbol.startsWith('△')) clr = 'var(--primary)';
     else if (symbol) clr = 'var(--danger)';
+    // 姓名颜色：有25m/50m成绩=绿 > 男生=蓝 > 默认
+    const hasSwimScore = !!(s.swim && ((s.swim.sw_25m && String(s.swim.sw_25m).trim()) || (s.swim.sw_50m && String(s.swim.sw_50m).trim())));
+    let nameStyle = '';
+    if (hasSwimScore) nameStyle = 'color:var(--success);font-weight:600';
+    else if (s.gender === '男') nameStyle = 'color:#007AFF;font-weight:600';
     html += `<tr>
       <td style="color:var(--text2)">${seq}</td>
-      <td style="${s.gender==='男'?'color:#007AFF;font-weight:600':''}">${esc(s.name)}</td><td>${esc(s.sid)}</td>
+      <td style="${nameStyle}">${esc(s.name)}</td><td>${esc(s.sid)}</td>
       <td><span class="tag ${s.exempt?'tag-danger':(skip?'tag-info':'tag-warn')}" onclick="${s.exempt?'':"toggleSkipAtt('"+s.id+"')"}" style="cursor:${s.exempt?'default':'pointer'};font-size:15px">${s.exempt?'免修':(skip?'免考勤':'上课')}</span></td>
       <td style="font-size:20px;font-weight:bold;${s.exempt?'':(skip?'color:#000':clr?'color:'+clr:'')}">${s.exempt?'':(skip?'✓':symbol)}</td>
       <td>
